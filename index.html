@@ -518,6 +518,90 @@
                 opacity: 1;
             }
         }
+
+        /* Championships List */
+        .championships-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .championship-card {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .championship-info h4 {
+            font-size: 1.2rem;
+            color: #e10600;
+            margin-bottom: 5px;
+        }
+
+        .championship-dates {
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .subscribe-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-subscribe {
+            background: #4caf50;
+            color: white;
+            border: none;
+        }
+
+        .btn-unsubscribe {
+            background: #f44336;
+            color: white;
+            border: none;
+        }
+
+        /* My Championships */
+        .my-championships {
+            display: grid;
+            gap: 20px;
+        }
+
+        .championship-details {
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .championship-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .championship-docs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .doc-link {
+            padding: 8px 12px;
+            background: #333;
+            border-radius: 4px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .doc-link:hover {
+            background: #e10600;
+        }
     </style>
 </head>
 <body>
@@ -692,32 +776,25 @@
             <section id="profileSection" class="section">
                 <h2 style="font-size: 2rem; margin-bottom: 30px;">👤 Il Mio Profilo</h2>
                 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">🏆</div>
-                        <div class="stat-label">Posizione</div>
-                        <div class="stat-value" id="myPosition">-</div>
+                <div class="card">
+                    <h3 class="card-title">📝 Iscrizioni Campionati</h3>
+                    <div id="championshipsList" class="championships-list">
+                        <!-- Populated dynamically -->
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">⭐</div>
-                        <div class="stat-label">Punti Totali</div>
-                        <div class="stat-value" id="myPoints">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">🥇</div>
-                        <div class="stat-label">Vittorie</div>
-                        <div class="stat-value" id="myWins">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">🏁</div>
-                        <div class="stat-label">Gare</div>
-                        <div class="stat-value" id="myRaces">-</div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">🏆 I Miei Campionati</h3>
+                    <div id="myChampionships" class="my-championships">
+                        <!-- Populated dynamically -->
                     </div>
                 </div>
 
                 <div class="card">
                     <h3 class="card-title">📊 Le Mie Gare</h3>
-                    <div id="myRacesList"></div>
+                    <div id="myRacesList" class="races-list">
+                        <!-- Populated dynamically -->
+                    </div>
                 </div>
             </section>
 
@@ -725,128 +802,100 @@
             <section id="adminSection" class="section">
                 <h2 style="font-size: 2rem; margin-bottom: 30px;">⚙️ Gestione</h2>
 
-                <div class="admin-tabs">
-                    <button class="tab-btn active" data-tab="results">📊 Inserisci Risultati</button>
-                    <button class="tab-btn" data-tab="events">📅 Nuovo Evento</button>
-                    <button class="tab-btn" data-tab="upload">📤 Upload CSV</button>
-                </div>
-
-                <!-- TAB: Inserisci Risultati -->
-                <div class="admin-content active" data-content="results">
-                    <div class="card">
-                        <h3 class="card-title">📊 Inserisci Risultati Gara</h3>
-                        <form id="resultForm" class="admin-form">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>🏁 Gara</label>
-                                    <select id="resultGara" required>
-                                        <option value="">Seleziona gara...</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>👤 Pilota</label>
-                                    <select id="resultPilota" required>
-                                        <option value="">Seleziona pilota...</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>🏆 Posizione Finale</label>
-                                    <input type="number" id="resultPosition" min="1" max="30" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>⏱️ Tempo Totale (HH:MM:SS)</label>
-                                    <input type="text" id="resultTime" placeholder="00:52:30" required>
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>🚗 Auto Utilizzata</label>
-                                    <input type="text" id="resultCar" placeholder="Porsche 911 GT3 RS" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>⚡ Giro Veloce (MM:SS.mmm)</label>
-                                    <input type="text" id="resultFastLap" placeholder="02:18.456">
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn-submit">💾 Salva Risultato</button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- TAB: Nuovo Evento -->
-                <div class="admin-content" data-content="events">
-                    <div class="card">
-                        <h3 class="card-title">📅 Crea Nuovo Evento</h3>
-                        <form id="eventForm" class="admin-form">
+                <div class="card">
+                    <h3 class="card-title">🏆 Nuovo Campionato</h3>
+                    <form id="championshipForm" class="admin-form">
+                        <div class="form-row">
                             <div class="form-group">
-                                <label>📌 Titolo</label>
-                                <input type="text" id="eventTitle" placeholder="All Traction #8 - Laguna Seca" required>
+                                <label>📌 Nome Campionato</label>
+                                <input type="text" id="champName" required>
                             </div>
-
                             <div class="form-group">
-                                <label>📝 Descrizione</label>
-                                <textarea id="eventDesc" rows="3" placeholder="Ottava tappa del campionato..."></textarea>
+                                <label>📅 Data Inizio</label>
+                                <input type="date" id="champStart" required>
                             </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>🎯 Tipo</label>
-                                    <select id="eventType" required>
-                                        <option value="Gara">🏁 Gara</option>
-                                        <option value="Test">🧪 Test</option>
-                                        <option value="Meeting">💬 Meeting</option>
-                                        <option value="Social">🎉 Social</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>📅 Data e Ora</label>
-                                    <input type="datetime-local" id="eventDate" required>
-                                </div>
+                            <div class="form-group">
+                                <label>📅 Data Fine</label>
+                                <input type="date" id="champEnd" required>
                             </div>
+                        </div>
 
-                            <button type="submit" class="btn-submit">📅 Crea Evento</button>
-                        </form>
-                    </div>
+                        <div class="form-group">
+                            <label>📝 Descrizione</label>
+                            <textarea id="champDesc" rows="3" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>📄 Regolamento (PDF)</label>
+                            <input type="file" id="champRules" accept=".pdf">
+                        </div>
+
+                        <button type="submit" class="btn-submit">💾 Crea Campionato</button>
+                    </form>
                 </div>
 
-                <!-- TAB: Upload CSV -->
-                <div class="admin-content" data-content="upload">
-                    <div class="card">
-                        <h3 class="card-title">📤 Upload Risultati da CSV</h3>
-                        
-                        <div class="upload-zone" id="dropZone">
-                            <div class="upload-icon">📄</div>
-                            <p>Trascina qui il file CSV o clicca per selezionare</p>
-                            <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
-                            <button class="btn-upload" onclick="document.getElementById('csvFileInput').click()">
-                                📁 Scegli File CSV
-                            </button>
-                        </div>
-
-                        <div class="csv-preview" id="csvPreview" style="display: none;">
-                            <h4>📋 Anteprima Dati</h4>
-                            <div id="csvPreviewTable"></div>
-                            <button class="btn-submit" id="confirmUpload">✅ Conferma e Carica</button>
-                        </div>
-
-                        <div class="csv-template">
-                            <h4>📥 Template CSV</h4>
-                            <p>Scarica il template per inserire i risultati:</p>
-                            <button class="btn-download" id="downloadTemplate">⬇️ Download Template</button>
-                            
-                            <div class="template-info">
-                                <strong>Formato richiesto:</strong>
-                                <pre>pilota_id,posizione,tempo_totale,auto,giro_veloce
-1,1,00:52:30,Porsche 911 GT3,02:18.456
-2,2,00:52:45,BMW M4 GT3,02:19.123</pre>
+                <div class="card">
+                    <h3 class="card-title">⚙️ Impostazioni Gara</h3>
+                    <form id="raceSettingsForm" class="admin-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>🏁 Gara</label>
+                                <select id="raceSelect" required>
+                                    <option value="">Seleziona gara...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>🌤️ Meteo</label>
+                                <select id="raceWeather" required>
+                                    <option value="S01">S01 Asciutto</option>
+                                    <option value="S02">S02 Variabile</option>
+                                    <option value="S03">S03 Pioggia</option>
+                                </select>
                             </div>
                         </div>
-                    </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>⏱️ Durata Gara (minuti)</label>
+                                <input type="number" id="raceDuration" required>
+                            </div>
+                            <div class="form-group">
+                                <label>⏱️ Durata Qualifiche (minuti)</label>
+                                <input type="number" id="qualiDuration" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>⛽ Consumo Carburante (x)</label>
+                                <input type="number" id="fuelConsumption" required>
+                            </div>
+                            <div class="form-group">
+                                <label>🛞 Usura Gomme (x)</label>
+                                <input type="number" id="tyreDegradation" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>🚦 Tipo Partenza</label>
+                                <select id="startType" required>
+                                    <option value="standing">Ferma</option>
+                                    <option value="rolling">Lanciata</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>💥 Danni</label>
+                                <select id="damageType" required>
+                                    <option value="light">Leggeri</option>
+                                    <option value="heavy">Pesanti</option>
+                                    <option value="simulation">Simulazione</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-submit">💾 Salva Impostazioni</button>
+                    </form>
                 </div>
             </section>
         </main>
@@ -934,6 +983,7 @@
             renderStandings();
             renderAllEvents();
             renderPilots();
+            renderChampionships();
         }
 
         function renderUpcomingEvents() {
@@ -1001,6 +1051,41 @@
             `).join('');
         }
 
+        function renderChampionships() {
+            const container = document.getElementById('championshipsList');
+            // Example championships data
+            const championships = [
+                {
+                    id: 1,
+                    name: "ALL TRACTION 3.0",
+                    startDate: "2025-01-28",
+                    endDate: "2025-03-27",
+                    subscribed: false
+                }
+            ];
+
+            container.innerHTML = championships.map(champ => `
+                <div class="championship-card">
+                    <div class="championship-info">
+                        <h4>${champ.name}</h4>
+                        <div class="championship-dates">
+                            📅 ${formatDate(champ.startDate)} - ${formatDate(champ.endDate)}
+                        </div>
+                    </div>
+                    <button class="subscribe-btn ${champ.subscribed ? 'btn-unsubscribe' : 'btn-subscribe'}"
+                            onclick="toggleSubscription(${champ.id})">
+                        ${champ.subscribed ? '❌ Ritirati' : '✅ Iscriviti'}
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function toggleSubscription(champId) {
+            // Implementation for subscribing/unsubscribing
+            showNotification('✅ Iscrizione aggiornata!');
+            renderChampionships();
+        }
+
         function formatDate(dateString) {
             const date = new Date(dateString);
             return date.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -1016,6 +1101,22 @@
                 notif.style.animation = 'slideIn 0.3s reverse';
                 setTimeout(() => notif.remove(), 300);
             }, 3000);
+        }
+
+        // Add event listeners for championship forms
+        document.getElementById('championshipForm').addEventListener('submit', handleNewChampionship);
+        document.getElementById('raceSettingsForm').addEventListener('submit', handleRaceSettings);
+
+        function handleNewChampionship(e) {
+            e.preventDefault();
+            // Implementation for creating new championship
+            showNotification('✅ Campionato creato con successo!');
+        }
+
+        function handleRaceSettings(e) {
+            e.preventDefault();
+            // Implementation for saving race settings
+            showNotification('✅ Impostazioni gara salvate!');
         }
     </script>
 </body>
