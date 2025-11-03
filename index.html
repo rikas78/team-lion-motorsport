@@ -654,6 +654,7 @@
                 <button class="nav-btn" data-section="calendar">📅 Calendario</button>
                 <button class="nav-btn" data-section="pilots">👥 Piloti</button>
                 <button class="nav-btn" data-section="profile">👤 Profilo</button>
+                <button class="nav-btn" data-section="admin">⚙️ Admin</button>
             </nav>
 
             <div class="user-info">
@@ -985,6 +986,7 @@
             renderAllEvents();
             renderPilots();
             renderChampionships();
+            renderMyChampionships();  // Added this line
         }
 
         function renderUpcomingEvents() {
@@ -1081,10 +1083,33 @@
             `).join('');
         }
 
-        function toggleSubscription(champId) {
-            // Implementation for subscribing/unsubscribing
-            showNotification('✅ Iscrizione aggiornata!');
-            renderChampionships();
+        function renderMyChampionships() {
+            const container = document.getElementById('myChampionships');
+            const myChamps = localStorage.getItem('myChampionships');
+            
+            if (!myChamps) {
+                container.innerHTML = '<p style="color: #999;">Non sei iscritto a nessun campionato</p>';
+                return;
+            }
+            
+            const champs = JSON.parse(myChamps);
+            
+            container.innerHTML = champs.map(champ => `
+                <div class="championship-details">
+                    <div class="championship-header">
+                        <div>
+                            <h4 style="color: #e10600; font-size: 1.3rem;">${champ.name}</h4>
+                            <div style="color: #999; font-size: 0.9rem;">
+                                📅 ${formatDate(champ.startDate)} - ${formatDate(champ.endDate)}
+                            </div>
+                        </div>
+                        <div class="championship-docs">
+                            <a href="#" class="doc-link">📄 Regolamento</a>
+                            <a href="#" class="doc-link">📋 Calendario</a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function formatDate(dateString) {
