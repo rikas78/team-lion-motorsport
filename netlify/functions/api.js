@@ -95,6 +95,53 @@ exports.handler = async (event) => {
             return await submitReclamo(event.body, user);
         }
 
+        // New Championship Routes
+        if (path === '/campionati' && method === 'GET') {
+            return await getCampionati();
+        }
+
+        if (path === '/campionati' && method === 'POST') {
+            return await createCampionato(event.body, user);
+        }
+
+        if (path.match(/^\/campionati\/\d+\/iscrizione$/) && method === 'POST') {
+            const champId = path.split('/')[2];
+            return await handleIscrizione(champId, user);
+        }
+
+        if (path.match(/^\/campionati\/\d+\/iscrizione$/) && method === 'DELETE') {
+            const champId = path.split('/')[2];
+            return await handleDisiscrizione(champId, user);
+        }
+
+        if (path.match(/^\/campionati\/\d+\/documenti$/) && method === 'POST') {
+            const champId = path.split('/')[2];
+            return await uploadDocumento(champId, event.body, user);
+        }
+
+        if (path === '/gare/impostazioni' && method === 'POST') {
+            return await saveImpostazioniGara(event.body, user);
+        }
+
+        // Add new routes before the 404 response:
+        if (path === '/piloti/profilo' && method === 'GET') {
+            return await getPilotaProfilo(user.id);
+        }
+
+        if (path === '/piloti/campionati' && method === 'GET') {
+            return await getPilotaCampionati(user.id);
+        }
+
+        if (path.match(/^\/campionati\/\d+\/documenti$/) && method === 'GET') {
+            const champId = path.split('/')[2];
+            return await getDocumentiCampionato(champId);
+        }
+
+        if (path.match(/^\/gare\/\d+\/impostazioni$/) && method === 'GET') {
+            const garaId = path.split('/')[2];
+            return await getImpostazioniGara(garaId);
+        }
+
         return sendResponse(404, { success: false, error: 'Route non trovata' });
 
     } catch (error) {
@@ -412,6 +459,232 @@ const submitReclamo = async (body, user) => {
             message: 'Reclamo inviato correttamente'
         });
 
+    } finally {
+        await client.end();
+    }
+};
+
+const getCampionati = async () => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+        const result = await client.query(`
+            SELECT 
+                c.*,
+                COUNT(DISTINCT i.pilota_id) as totale_iscritti,
+                EXISTS(SELECT 1 FROM documenti_campionato dc WHERE dc.campionato_id = c.id) as has_docs
+            FROM campionati c
+            LEFT JOIN iscrizioni_campionati i ON i.campionato_id = c.id
+            WHERE c.status = 'Active'
+            GROUP BY c.id
+            ORDER BY c.data_inizio DESC
+        `);
+        
+        return sendResponse(200, {
+            success: true,
+            campionati: result.rows
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const createCampionato = async (body, user) => {
+    const { nome, descrizione, data_inizio, data_fine } = JSON.parse(body);
+    
+    if (!nome || !data_inizio || !data_fine) {
+        return sendResponse(400, { success: false, error: 'Dati mancanti' });
+    }
+
+    const client = getDBClient();
+    try {
+        await client.connect();
+        const result = await client.query(`
+            INSERT INTO campionati (nome, descrizione, data_inizio, data_fine, creato_da)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id
+        `, [nome, descrizione, data_inizio, data_fine, user.id]);
+
+        return sendResponse(201, {
+            success: true,
+            campionato_id: result.rows[0].id
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const handleIscrizione = async (champId, user) => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+        await client.query(`
+            INSERT INTO iscrizioni_campionati (campionato_id, pilota_id, data_iscrizione)
+            VALUES ($1, $2, CURRENT_TIMESTAMP)
+            ON CONFLICT DO NOTHING
+        `, [champId, user.id]);
+
+        return sendResponse(200, {
+            success: true,
+            message: 'Iscrizione effettuata'
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const handleDisiscrizione = async (champId, user) => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+        await client.query(`
+            DELETE FROM iscrizioni_campionati 
+            WHERE campionato_id = $1 AND pilota_id = $2
+        `, [champId, user.id]);
+
+        return sendResponse(200, {
+            success: true,
+            message: 'Disiscrizione effettuata'
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const uploadDocumento = async (champId, body, user) => {
+    const { title, file_url, tipo } = JSON.parse(body);
+    
+    const client = getDBClient();
+    try {
+        await client.connect();
+        await client.query(`
+            INSERT INTO documenti_campionato (campionato_id, titolo, file_url, tipo, caricato_da)
+            VALUES ($1, $2, $3, $4, $5)
+        `, [champId, title, file_url, tipo, user.id]);
+
+        return sendResponse(201, {
+            success: true,
+            message: 'Documento caricato'
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const saveImpostazioniGara = async (body, user) => {
+    const { gara_id, meteo, durata, qualifiche, consumo_carburante, usura_gomme, 
+            tipo_partenza, bop, danni, penalita } = JSON.parse(body);
+    
+    const client = getDBClient();
+    try {
+        await client.connect();
+        await client.query(`
+            INSERT INTO impostazioni_gara (
+                gara_id, meteo, durata_gara, durata_qualifiche, 
+                consumo_carburante, usura_gomme, tipo_partenza,
+                bop, danni, penalita, modificato_da
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            ON CONFLICT (gara_id) 
+            DO UPDATE SET 
+                meteo = $2, durata_gara = $3, durata_qualifiche = $4,
+                consumo_carburante = $5, usura_gomme = $6, tipo_partenza = $7,
+                bop = $8, danni = $9, penalita = $10, modificato_da = $11
+        `, [gara_id, meteo, durata, qualifiche, consumo_carburante, usura_gomme,
+            tipo_partenza, bop, danni, penalita, user.id]);
+
+        return sendResponse(200, {
+            success: true,
+            message: 'Impostazioni salvate'
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const getPilotaProfilo = async (pilotaId) => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+        const result = await client.query(`
+            SELECT 
+                p.*,
+                COALESCE(sp.punti_totali, 0) as punti,
+                COALESCE(sp.vittorie_totali, 0) as vittorie,
+                COALESCE(sp.gare_totali, 0) as gare,
+                COALESCE(sp.podi_totali, 0) as podi
+            FROM piloti p
+            LEFT JOIN statistiche_piloti sp ON sp.pilota_id = p.id
+            WHERE p.id = $1
+        `, [pilotaId]);
+
+        return sendResponse(200, {
+            success: true,
+            profilo: result.rows[0]
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const getPilotaCampionati = async (pilotaId) => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+        const result = await client.query(`
+            SELECT 
+                c.*,
+                i.data_iscrizione,
+                i.auto_scelta,
+                (SELECT COUNT(*) FROM iscrizioni_campionati ic WHERE ic.campionato_id = c.id) as totale_iscritti
+            FROM campionati c
+            LEFT JOIN iscrizioni_campionati i ON i.campionato_id = c.id AND i.pilota_id = $1
+            WHERE c.status = 'Active'
+            ORDER BY c.data_inizio DESC
+        `, [pilotaId]);
+
+        return sendResponse(200, {
+            success: true,
+            campionati: result.rows
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const getDocumentiCampionato = async (champId) => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+        const result = await client.query(`
+            SELECT id, titolo, tipo, file_url, uploaded_at
+            FROM documenti_campionato
+            WHERE campionato_id = $1
+            ORDER BY uploaded_at DESC
+        `, [champId]);
+
+        return sendResponse(200, {
+            success: true,
+            documenti: result.rows
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const getImpostazioniGara = async (garaId) => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+        const result = await client.query(`
+            SELECT *
+            FROM impostazioni_gara
+            WHERE gara_id = $1
+        `, [garaId]);
+
+        return sendResponse(200, {
+            success: true,
+            impostazioni: result.rows[0] || null
+        });
     } finally {
         await client.end();
     }
