@@ -1,0 +1,418 @@
+const { Client } = require('pg');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const getDBClient = () => {
+    return new Client({
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+    });
+};
+
+const JWT_SECRET = process.env.JWT_SECRET || 'tlm-secret-key-change-in-production';
+
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
+};
+
+const verifyToken = (token) => {
+    try {
+        return jwt.verify(token, JWT_SECRET);
+    } catch (error) {
+        return null;
+    }
+};
+
+const sendResponse = (statusCode, body) => {
+    return {
+        statusCode,
+        headers: corsHeaders,
+        body: JSON.stringify(body)
+    };
+};
+
+exports.handler = async (event) => {
+    if (event.httpMethod === 'OPTIONS') {
+        return sendResponse(200, { ok: true });
+    }
+
+    const path = event.path.replace('/.netlify/functions/api', '').toLowerCase();
+    const method = event.httpMethod;
+
+    try {
+        if (path === '/auth/login' && method === 'POST') {
+            return await handleLogin(event.body);
+        }
+
+        if (path === '/auth/register' && method === 'POST') {
+            return await handleRegister(event.body);
+        }
+
+        if (path === '/piloti' && method === 'GET') {
+            return await getPiloti();
+        }
+
+        if (path === '/classifica' && method === 'GET') {
+            const campionatoId = event.queryStringParameters?.campionato_id || 1;
+            return await getClassifica(campionatoId);
+        }
+
+        if (path === '/gare' && method === 'GET') {
+            const campionatoId = event.queryStringParameters?.campionato_id || 1;
+            return await getGare(campionatoId);
+        }
+
+        if (path === '/gare/prossime' && method === 'GET') {
+            return await getProssimaGare();
+        }
+
+        if (path === '/stats' && method === 'GET') {
+            return await getStats();
+        }
+
+        const token = event.headers.authorization?.replace('Bearer ', '');
+        
+        if (!token) {
+            return sendResponse(401, { success: false, error: 'Token non fornito' });
+        }
+
+        const user = verifyToken(token);
+        if (!user) {
+            return sendResponse(401, { success: false, error: 'Token non valido' });
+        }
+
+        if (path === '/risultati' && method === 'POST') {
+            return await submitRisultato(event.body, user);
+        }
+
+        if (path === '/reclami' && method === 'GET') {
+            return await getReclami();
+        }
+
+        if (path === '/reclami' && method === 'POST') {
+            return await submitReclamo(event.body, user);
+        }
+
+        return sendResponse(404, { success: false, error: 'Route non trovata' });
+
+    } catch (error) {
+        console.error('API Error:', error);
+        return sendResponse(500, { 
+            success: false, 
+            error: error.message 
+        });
+    }
+};
+
+const handleLogin = async (body) => {
+    const { email, password } = JSON.parse(body);
+
+    if (!email || !password) {
+        return sendResponse(400, { success: false, error: 'Email e password richiesti' });
+    }
+
+    const client = getDBClient();
+    
+    try {
+        await client.connect();
+
+        const result = await client.query(
+            'SELECT * FROM piloti WHERE email = $1',
+            [email]
+        );
+
+        if (result.rows.length === 0) {
+            return sendResponse(401, { success: false, error: 'Credenziali non valide' });
+        }
+
+        const user = result.rows[0];
+
+        const passwordMatch = await bcrypt.compare(password, user.password_hash);
+
+        if (!passwordMatch) {
+            return sendResponse(401, { success: false, error: 'Credenziali non valide' });
+        }
+
+        const token = jwt.sign(
+            { id: user.id, email: user.email, nome: user.nome },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        return sendResponse(200, {
+            success: true,
+            token,
+            user: {
+                id: user.id,
+                nome: user.nome,
+                email: user.email,
+                categoria: user.categoria,
+                ruolo: user.ruolo
+            }
+        });
+
+    } finally {
+        await client.end();
+    }
+};
+
+const handleRegister = async (body) => {
+    const { nome, email, password, psn_id } = JSON.parse(body);
+
+    if (!nome || !email || !password || !psn_id) {
+        return sendResponse(400, { success: false, error: 'Campi mancanti' });
+    }
+
+    const client = getDBClient();
+
+    try {
+        await client.connect();
+
+        const existing = await client.query(
+            'SELECT id FROM piloti WHERE email = $1 OR psn_id = $2',
+            [email, psn_id]
+        );
+
+        if (existing.rows.length > 0) {
+            return sendResponse(400, { success: false, error: 'Email o PSN ID già registrati' });
+        }
+
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        const result = await client.query(
+            `INSERT INTO piloti (nome, email, password_hash, psn_id, categoria, ruolo)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING id, nome, email, categoria`,
+            [nome, email, passwordHash, psn_id, 'Academy', 'pilota']
+        );
+
+        const newUser = result.rows[0];
+
+        const token = jwt.sign(
+            { id: newUser.id, email: newUser.email, nome: newUser.nome },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        return sendResponse(201, {
+            success: true,
+            token,
+            user: newUser
+        });
+
+    } finally {
+        await client.end();
+    }
+};
+
+const getPiloti = async () => {
+    const client = getDBClient();
+
+    try {
+        await client.connect();
+
+        const result = await client.query(
+            'SELECT id, nome, cognome, email, psn_id, gt_id, numero_gara, categoria FROM piloti WHERE attivo = true ORDER BY nome'
+        );
+
+        return sendResponse(200, {
+            success: true,
+            totale: result.rows.length,
+            piloti: result.rows
+        });
+
+    } finally {
+        await client.end();
+    }
+};
+
+const getClassifica = async (campionatoId) => {
+    const client = getDBClient();
+
+    try {
+        await client.connect();
+
+        const result = await client.query(
+            `SELECT 
+                p.id, p.nome, p.categoria,
+                COALESCE(sp.punti_totali, 0) as punti,
+                COALESCE(sp.vittorie_totali, 0) as vittorie,
+                COALESCE(sp.podi_totali, 0) as podi,
+                COALESCE(sp.gare_totali, 0) as gare
+            FROM piloti p
+            LEFT JOIN statistiche_piloti sp ON sp.pilota_id = p.id
+            WHERE p.attivo = true
+            ORDER BY punti DESC, vittorie DESC
+            LIMIT 50`
+        );
+
+        return sendResponse(200, {
+            success: true,
+            campionato_id: campionatoId,
+            classifica: result.rows
+        });
+
+    } finally {
+        await client.end();
+    }
+};
+
+const getGare = async (campionatoId) => {
+    const client = getDBClient();
+
+    try {
+        await client.connect();
+
+        const result = await client.query(
+            `SELECT 
+                g.id, g.numero_gara, g.nome, g.circuito, g.data_gara, 
+                g.durata_minuti, g.tipo_trazione, g.status,
+                c.nome as campionato
+            FROM gare g
+            JOIN campionati c ON c.id = g.campionato_id
+            WHERE g.campionato_id = $1
+            ORDER BY g.data_gara`,
+            [campionatoId]
+        );
+
+        return sendResponse(200, {
+            success: true,
+            gare: result.rows
+        });
+
+    } finally {
+        await client.end();
+    }
+};
+
+const getProssimaGare = async () => {
+    const client = getDBClient();
+
+    try {
+        await client.connect();
+
+        const result = await client.query(
+            `SELECT 
+                g.id, g.numero_gara, g.nome, g.circuito, g.data_gara, 
+                g.durata_minuti, g.tipo_trazione,
+                c.nome as campionato
+            FROM gare g
+            JOIN campionati c ON c.id = g.campionato_id
+            WHERE g.status = 'Scheduled'
+            ORDER BY g.data_gara
+            LIMIT 5`
+        );
+
+        return sendResponse(200, {
+            success: true,
+            gare: result.rows
+        });
+
+    } finally {
+        await client.end();
+    }
+};
+
+const getStats = async () => {
+    const client = getDBClient();
+
+    try {
+        await client.connect();
+
+        const pilotsResult = await client.query('SELECT COUNT(*) as count FROM piloti WHERE attivo = true');
+        const champResult = await client.query('SELECT COUNT(*) as count FROM campionati WHERE status = \'Active\'');
+        const raceResult = await client.query('SELECT COUNT(*) as count FROM gare');
+
+        return sendResponse(200, {
+            success: true,
+            totale_piloti: parseInt(pilotsResult.rows[0].count),
+            totale_campionati: parseInt(champResult.rows[0].count),
+            totale_gare: parseInt(raceResult.rows[0].count)
+        });
+
+    } finally {
+        await client.end();
+    }
+};
+
+const submitRisultato = async (body, user) => {
+    const { gara_id, posizione_finale, tempo_totale, auto_utilizzata } = JSON.parse(body);
+
+    if (!gara_id || !posizione_finale) {
+        return sendResponse(400, { success: false, error: 'Dati richiesti mancanti' });
+    }
+
+    const client = getDBClient();
+
+    try {
+        await client.connect();
+
+        await client.query(
+            `INSERT INTO risultati_gare (gara_id, pilota_id, posizione_finale, tempo_totale, auto_utilizzata)
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (gara_id, pilota_id) 
+             DO UPDATE SET posizione_finale = $3, tempo_totale = $4, auto_utilizzata = $5`,
+            [gara_id, user.id, posizione_finale, tempo_totale, auto_utilizzata]
+        );
+
+        return sendResponse(200, {
+            success: true,
+            message: 'Risultato inserito correttamente'
+        });
+
+    } finally {
+        await client.end();
+    }
+};
+
+const getReclami = async () => {
+    const client = getDBClient();
+
+    try {
+        await client.connect();
+
+        const result = await client.query(
+            `SELECT * FROM reclami ORDER BY data_reclamo DESC LIMIT 20`
+        );
+
+        return sendResponse(200, {
+            success: true,
+            reclami: result.rows
+        });
+
+    } finally {
+        await client.end();
+    }
+};
+
+const submitReclamo = async (body, user) => {
+    const { gara_id, tipo, descrizione, contro_pilota_id, giro, curva } = JSON.parse(body);
+
+    if (!gara_id || !tipo || !descrizione) {
+        return sendResponse(400, { success: false, error: 'Dati richiesti mancanti' });
+    }
+
+    const client = getDBClient();
+
+    try {
+        await client.connect();
+
+        const result = await client.query(
+            `INSERT INTO reclami (gara_id, reclamante_id, contro_pilota_id, tipo, giro, curva, descrizione)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             RETURNING id`,
+            [gara_id, user.id, contro_pilota_id, tipo, giro, curva, descrizione]
+        );
+
+        return sendResponse(201, {
+            success: true,
+            reclamo_id: result.rows[0].id,
+            message: 'Reclamo inviato correttamente'
+        });
+
+    } finally {
+        await client.end();
+    }
+};
