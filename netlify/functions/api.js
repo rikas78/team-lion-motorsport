@@ -145,135 +145,202 @@ exports.handler = async (event) => {
 
     const path = event.path.replace('/.netlify/functions/api', '').toLowerCase();
     const method = event.httpMethod;
+    const startTime = Date.now();
 
     try {
+        // ============================================
+        // MIDDLEWARE CREDITI GLOBALE
+        // ============================================
+
+        // Percorsi pubblici (non richiedono token né crediti)
+        const publicPaths = ['/auth/login', '/auth/register'];
+        const isPublicPath = publicPaths.includes(path);
+
+        // Percorsi che non consumano crediti (gratuiti dopo auth)
+        const freePaths = ['/crediti', '/crediti/stats', '/crediti/ricarica'];
+        const isFreePath = freePaths.includes(path);
+
+        let user = null;
+        let client = null;
+
+        // Verifica token per percorsi protetti
+        if (!isPublicPath) {
+            const token = event.headers.authorization?.replace('Bearer ', '');
+
+            if (!token) {
+                return sendResponse(401, { success: false, error: 'Token non fornito' });
+            }
+
+            user = verifyToken(token);
+            if (!user) {
+                return sendResponse(401, { success: false, error: 'Token non valido' });
+            }
+
+            // Consuma crediti se non è un percorso gratuito
+            if (!isFreePath) {
+                const cost = getEndpointCost(path);
+
+                if (cost > 0) {
+                    client = getDBClient();
+                    await client.connect();
+
+                    const hasCredits = await checkAndConsumeCredits(client, user.id, path, cost);
+
+                    if (!hasCredits) {
+                        const responseTime = Date.now() - startTime;
+                        await logApiUsage(client, user.id, path, method, 0, 429, responseTime,
+                            event.headers['x-forwarded-for'] || event.headers['client-ip'],
+                            event.headers['user-agent']);
+
+                        await client.end();
+
+                        return sendResponse(429, {
+                            success: false,
+                            error: 'Crediti insufficienti',
+                            message: 'Non hai abbastanza crediti API per questa operazione'
+                        });
+                    }
+                }
+            }
+        }
+
+        // ============================================
+        // ROUTING NORMALE
+        // ============================================
+
+        let response;
+
         if (path === '/auth/login' && method === 'POST') {
-            return await handleLogin(event.body);
+            response = await handleLogin(event.body);
         }
 
-        if (path === '/auth/register' && method === 'POST') {
-            return await handleRegister(event.body);
+        else if (path === '/auth/register' && method === 'POST') {
+            response = await handleRegister(event.body);
         }
 
-        if (path === '/piloti' && method === 'GET') {
-            return await getPiloti();
+        else if (path === '/piloti' && method === 'GET') {
+            response = await getPiloti();
         }
 
-        if (path === '/classifica' && method === 'GET') {
+        else if (path === '/classifica' && method === 'GET') {
             const campionatoId = event.queryStringParameters?.campionato_id || 1;
-            return await getClassifica(campionatoId);
+            response = await getClassifica(campionatoId);
         }
 
-        if (path === '/gare' && method === 'GET') {
+        else if (path === '/gare' && method === 'GET') {
             const campionatoId = event.queryStringParameters?.campionato_id || 1;
-            return await getGare(campionatoId);
+            response = await getGare(campionatoId);
         }
 
-        if (path === '/gare/prossime' && method === 'GET') {
-            return await getProssimaGare();
+        else if (path === '/gare/prossime' && method === 'GET') {
+            response = await getProssimaGare();
         }
 
-        if (path === '/stats' && method === 'GET') {
-            return await getStats();
+        else if (path === '/stats' && method === 'GET') {
+            response = await getStats();
         }
 
-        const token = event.headers.authorization?.replace('Bearer ', '');
-        
-        if (!token) {
-            return sendResponse(401, { success: false, error: 'Token non fornito' });
+        else if (path === '/risultati' && method === 'POST') {
+            response = await submitRisultato(event.body, user);
         }
 
-        const user = verifyToken(token);
-        if (!user) {
-            return sendResponse(401, { success: false, error: 'Token non valido' });
+        else if (path === '/reclami' && method === 'GET') {
+            response = await getReclami();
         }
 
-        if (path === '/risultati' && method === 'POST') {
-            return await submitRisultato(event.body, user);
+        else if (path === '/reclami' && method === 'POST') {
+            response = await submitReclamo(event.body, user);
         }
 
-        if (path === '/reclami' && method === 'GET') {
-            return await getReclami();
+        else if (path === '/campionati' && method === 'GET') {
+            response = await getCampionati();
         }
 
-        if (path === '/reclami' && method === 'POST') {
-            return await submitReclamo(event.body, user);
+        else if (path === '/campionati' && method === 'POST') {
+            response = await createCampionato(event.body, user);
         }
 
-        // New Championship Routes
-        if (path === '/campionati' && method === 'GET') {
-            return await getCampionati();
-        }
-
-        if (path === '/campionati' && method === 'POST') {
-            return await createCampionato(event.body, user);
-        }
-
-        if (path.match(/^\/campionati\/\d+\/iscrizione$/) && method === 'POST') {
+        else if (path.match(/^\/campionati\/\d+\/iscrizione$/) && method === 'POST') {
             const champId = path.split('/')[2];
-            return await handleIscrizione(champId, user);
+            response = await handleIscrizione(champId, user);
         }
 
-        if (path.match(/^\/campionati\/\d+\/iscrizione$/) && method === 'DELETE') {
+        else if (path.match(/^\/campionati\/\d+\/iscrizione$/) && method === 'DELETE') {
             const champId = path.split('/')[2];
-            return await handleDisiscrizione(champId, user);
+            response = await handleDisiscrizione(champId, user);
         }
 
-        if (path.match(/^\/campionati\/\d+\/documenti$/) && method === 'POST') {
+        else if (path.match(/^\/campionati\/\d+\/documenti$/) && method === 'POST') {
             const champId = path.split('/')[2];
-            return await uploadDocumento(champId, event.body, user);
+            response = await uploadDocumento(champId, event.body, user);
         }
 
-        if (path === '/gare/impostazioni' && method === 'POST') {
-            return await saveImpostazioniGara(event.body, user);
+        else if (path === '/gare/impostazioni' && method === 'POST') {
+            response = await saveImpostazioniGara(event.body, user);
         }
 
-        // Add new routes before the 404 response:
-        if (path === '/piloti/profilo' && method === 'GET') {
-            return await getPilotaProfilo(user.id);
+        else if (path === '/piloti/profilo' && method === 'GET') {
+            response = await getPilotaProfilo(user.id);
         }
 
-        if (path === '/piloti/campionati' && method === 'GET') {
-            return await getPilotaCampionati(user.id);
+        else if (path === '/piloti/campionati' && method === 'GET') {
+            response = await getPilotaCampionati(user.id);
         }
 
-        if (path.match(/^\/campionati\/\d+\/documenti$/) && method === 'GET') {
+        else if (path.match(/^\/campionati\/\d+\/documenti$/) && method === 'GET') {
             const champId = path.split('/')[2];
-            return await getDocumentiCampionato(champId);
+            response = await getDocumentiCampionato(champId);
         }
 
-        if (path.match(/^\/gare\/\d+\/impostazioni$/) && method === 'GET') {
+        else if (path.match(/^\/gare\/\d+\/impostazioni$/) && method === 'GET') {
             const garaId = path.split('/')[2];
-            return await getImpostazioniGara(garaId);
+            response = await getImpostazioniGara(garaId);
         }
 
         // ============================================
         // ENDPOINT CREDITI API
         // ============================================
 
-        if (path === '/crediti' && method === 'GET') {
-            return await getCrediti(user);
+        else if (path === '/crediti' && method === 'GET') {
+            response = await getCrediti(user);
         }
 
-        if (path === '/crediti/storico' && method === 'GET') {
-            return await getStoricoCrediti(user);
+        else if (path === '/crediti/storico' && method === 'GET') {
+            response = await getStoricoCrediti(user);
         }
 
-        if (path === '/crediti/ricarica' && method === 'POST') {
-            return await ricaricaCrediti(event.body, user);
+        else if (path === '/crediti/ricarica' && method === 'POST') {
+            response = await ricaricaCrediti(event.body, user);
         }
 
-        if (path === '/crediti/stats' && method === 'GET') {
-            return await getStatsCrediti(user);
+        else if (path === '/crediti/stats' && method === 'GET') {
+            response = await getStatsCrediti(user);
         }
 
-        return sendResponse(404, { success: false, error: 'Route non trovata' });
+        else {
+            response = sendResponse(404, { success: false, error: 'Route non trovata' });
+        }
+
+        // ============================================
+        // LOG API USAGE
+        // ============================================
+
+        if (user && client) {
+            const responseTime = Date.now() - startTime;
+            const cost = getEndpointCost(path);
+            await logApiUsage(client, user.id, path, method, cost, response.statusCode, responseTime,
+                event.headers['x-forwarded-for'] || event.headers['client-ip'],
+                event.headers['user-agent']);
+            await client.end();
+        }
+
+        return response;
 
     } catch (error) {
         console.error('API Error:', error);
-        return sendResponse(500, { 
-            success: false, 
-            error: error.message 
+        return sendResponse(500, {
+            success: false,
+            error: error.message
         });
     }
 };
