@@ -1,22 +1,25 @@
+# Netlify Configuration - Team Lion Motorsport + Carlsberg
+
 [build]
-  command = "npm install"
-  functions = "netlify/functions"
   publish = "."
+  command = "echo 'Static site - no build needed'"
 
-[build.environment]
-  NODE_VERSION = "18.0.0"
-
+# Redirect root to Carlsberg app
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/ordini"
+  to = "/carlsberg-ordini.html"
   status = 200
 
-[functions]
-  node_bundler = "esbuild"
-  external_node_modules = ["pg", "bcryptjs", "jsonwebtoken"]
+[[redirects]]
+  from = "/grazie"
+  to = "/thank-you.html"
+  status = 200
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
