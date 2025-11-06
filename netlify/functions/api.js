@@ -33,6 +33,111 @@ const sendResponse = (statusCode, body) => {
     };
 };
 
+// ============================================
+// SISTEMA CREDITI API
+// ============================================
+
+const ENDPOINT_COSTS = {
+    '/auth/login': 0,
+    '/auth/register': 0,
+    '/piloti': 1,
+    '/classifica': 2,
+    '/gare': 1,
+    '/gare/prossime': 1,
+    '/stats': 1,
+    '/risultati': 3,
+    '/reclami': 2,
+    '/campionati': 2,
+    '/piloti/profilo': 1,
+    '/piloti/campionati': 2,
+    '/crediti': 0,
+    '/crediti/storico': 1,
+    '/crediti/ricarica': 0,
+    'default': 1
+};
+
+const getEndpointCost = (path) => {
+    // Normalizza path per matching
+    const normalizedPath = path.replace(/\/\d+/g, '/:id');
+    return ENDPOINT_COSTS[normalizedPath] || ENDPOINT_COSTS[path] || ENDPOINT_COSTS['default'];
+};
+
+const checkAndConsumeCredits = async (client, userId, endpoint, cost) => {
+    if (cost === 0) return true; // Endpoint gratuito
+
+    try {
+        // Verifica e consuma crediti usando funzione SQL
+        const result = await client.query(
+            'SELECT consuma_crediti($1, $2, $3) as success',
+            [userId, endpoint, cost]
+        );
+
+        return result.rows[0].success;
+    } catch (error) {
+        console.error('Error checking credits:', error);
+        return false;
+    }
+};
+
+const logApiUsage = async (client, userId, endpoint, method, cost, statusCode, responseTime, ipAddress, userAgent) => {
+    try {
+        await client.query(
+            `INSERT INTO api_usage (pilota_id, endpoint, metodo, crediti_consumati, status_code, response_time_ms, ip_address, user_agent)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+            [userId, endpoint, method, cost, statusCode, responseTime, ipAddress, userAgent]
+        );
+    } catch (error) {
+        console.error('Error logging API usage:', error);
+    }
+};
+
+const withCreditsCheck = async (handler, event, user) => {
+    const startTime = Date.now();
+    const path = event.path.replace('/.netlify/functions/api', '').toLowerCase();
+    const method = event.httpMethod;
+    const cost = getEndpointCost(path);
+
+    const client = getDBClient();
+
+    try {
+        await client.connect();
+
+        // Se richiede crediti, verifica disponibilità
+        if (user && cost > 0) {
+            const hasCredits = await checkAndConsumeCredits(client, user.id, path, cost);
+
+            if (!hasCredits) {
+                const responseTime = Date.now() - startTime;
+                await logApiUsage(client, user.id, path, method, 0, 429, responseTime,
+                    event.headers['x-forwarded-for'] || event.headers['client-ip'],
+                    event.headers['user-agent']);
+
+                return sendResponse(429, {
+                    success: false,
+                    error: 'Crediti insufficienti',
+                    message: 'Non hai abbastanza crediti API per questa operazione'
+                });
+            }
+        }
+
+        // Esegui handler
+        const response = await handler(client, user);
+        const responseTime = Date.now() - startTime;
+
+        // Log utilizzo
+        if (user) {
+            await logApiUsage(client, user.id, path, method, cost, response.statusCode, responseTime,
+                event.headers['x-forwarded-for'] || event.headers['client-ip'],
+                event.headers['user-agent']);
+        }
+
+        return response;
+
+    } finally {
+        await client.end();
+    }
+};
+
 exports.handler = async (event) => {
     if (event.httpMethod === 'OPTIONS') {
         return sendResponse(200, { ok: true });
@@ -140,6 +245,26 @@ exports.handler = async (event) => {
         if (path.match(/^\/gare\/\d+\/impostazioni$/) && method === 'GET') {
             const garaId = path.split('/')[2];
             return await getImpostazioniGara(garaId);
+        }
+
+        // ============================================
+        // ENDPOINT CREDITI API
+        // ============================================
+
+        if (path === '/crediti' && method === 'GET') {
+            return await getCrediti(user);
+        }
+
+        if (path === '/crediti/storico' && method === 'GET') {
+            return await getStoricoCrediti(user);
+        }
+
+        if (path === '/crediti/ricarica' && method === 'POST') {
+            return await ricaricaCrediti(event.body, user);
+        }
+
+        if (path === '/crediti/stats' && method === 'GET') {
+            return await getStatsCrediti(user);
         }
 
         return sendResponse(404, { success: false, error: 'Route non trovata' });
@@ -684,6 +809,145 @@ const getImpostazioniGara = async (garaId) => {
         return sendResponse(200, {
             success: true,
             impostazioni: result.rows[0] || null
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+// ============================================
+// HANDLER CREDITI API
+// ============================================
+
+const getCrediti = async (user) => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+        const result = await client.query(`
+            SELECT
+                crediti_disponibili,
+                crediti_totali_utilizzati,
+                ultimo_utilizzo,
+                ultimo_ricarico
+            FROM api_credits
+            WHERE pilota_id = $1
+        `, [user.id]);
+
+        if (result.rows.length === 0) {
+            // Inizializza crediti se non esistono
+            await client.query(`
+                INSERT INTO api_credits (pilota_id, crediti_disponibili)
+                VALUES ($1, 1000)
+            `, [user.id]);
+
+            return sendResponse(200, {
+                success: true,
+                crediti: {
+                    crediti_disponibili: 1000,
+                    crediti_totali_utilizzati: 0,
+                    ultimo_utilizzo: null,
+                    ultimo_ricarico: null
+                }
+            });
+        }
+
+        return sendResponse(200, {
+            success: true,
+            crediti: result.rows[0]
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const getStoricoCrediti = async (user) => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+        const result = await client.query(`
+            SELECT
+                endpoint,
+                metodo,
+                crediti_consumati,
+                status_code,
+                response_time_ms,
+                created_at
+            FROM api_usage
+            WHERE pilota_id = $1
+            ORDER BY created_at DESC
+            LIMIT 100
+        `, [user.id]);
+
+        return sendResponse(200, {
+            success: true,
+            storico: result.rows,
+            totale: result.rows.length
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const getStatsCrediti = async (user) => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+        const result = await client.query(`
+            SELECT * FROM get_api_stats($1)
+        `, [user.id]);
+
+        return sendResponse(200, {
+            success: true,
+            stats: result.rows[0] || {
+                crediti_disponibili: 0,
+                crediti_utilizzati: 0,
+                chiamate_oggi: 0,
+                chiamate_settimana: 0,
+                chiamate_totali: 0
+            }
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const ricaricaCrediti = async (body, user) => {
+    const { pilota_id, crediti, motivo } = JSON.parse(body);
+
+    // Solo manager/admin possono ricaricare crediti
+    const client = getDBClient();
+    try {
+        await client.connect();
+
+        // Verifica ruolo
+        const userCheck = await client.query(
+            'SELECT ruolo FROM piloti WHERE id = $1',
+            [user.id]
+        );
+
+        if (!userCheck.rows[0] || userCheck.rows[0].ruolo !== 'manager') {
+            return sendResponse(403, {
+                success: false,
+                error: 'Solo i manager possono ricaricare i crediti'
+            });
+        }
+
+        if (!pilota_id || !crediti || crediti <= 0) {
+            return sendResponse(400, {
+                success: false,
+                error: 'Dati richiesti mancanti o non validi'
+            });
+        }
+
+        // Usa funzione SQL per ricarica
+        await client.query(
+            'SELECT ricarica_crediti($1, $2, $3, $4, $5)',
+            [pilota_id, crediti, 'Manuale', motivo || 'Ricarica manuale', user.id]
+        );
+
+        return sendResponse(200, {
+            success: true,
+            message: `Ricaricati ${crediti} crediti con successo`
         });
     } finally {
         await client.end();
