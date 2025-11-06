@@ -1,19 +1,8 @@
-# Netlify Configuration - Team Lion Motorsport + Carlsberg
+# Netlify Configuration - Team Lion Motorsport
 
 [build]
   publish = "."
   command = "echo 'Static site - no build needed'"
-
-# Redirect root to Carlsberg app
-[[redirects]]
-  from = "/ordini"
-  to = "/carlsberg-ordini.html"
-  status = 200
-
-[[redirects]]
-  from = "/grazie"
-  to = "/thank-you.html"
-  status = 200
 
 # Headers for security
 [[headers]]

@@ -1,8 +1,6 @@
-# 🦁 Team Lion Motorsport + 🧀 Carlsberg Ordini
+# 🦁 Team Lion Motorsport (TLM)
 
-Repository unificato per due progetti:
-1. **TLM** - Sistema gestione campionati Gran Turismo 7 con **API Credits System**
-2. **Carlsberg** - Web app ordini mozzarella per 21 ristoranti Milano
+Sistema completo gestione campionati sim racing Gran Turismo 7 con **Sistema Crediti API**
 
 ---
 
@@ -11,20 +9,17 @@ Repository unificato per due progetti:
 ```
 team-lion-motorsport/
 ├── index.html                      # TLM Frontend (SPA Gran Turismo)
-├── carlsberg-ordini.html           # Carlsberg Ordini (tabella 21 ristoranti)
-├── thank-you.html                  # Conferma ordine Carlsberg
 ├── netlify.toml                    # Config Netlify per deploy
 ├── netlify/functions/
 │   └── api.js                      # TLM Backend API + Sistema Crediti
 ├── tlm_schema.sql                  # Database PostgreSQL schema completo
 ├── tlm_seed_data.sql               # Dati di test TLM
-├── TEST_API_GUIDE.md              # 🧪 Guida test API TLM
-└── DEPLOY_CARLSBERG_GUIDE.md      # 🚀 Guida deploy Carlsberg
+└── TEST_API_GUIDE.md              # 🧪 Guida test API TLM
 ```
 
 ---
 
-## 🦁 Progetto 1: Team Lion Motorsport (TLM)
+## 🦁 Team Lion Motorsport (TLM)
 
 ### Descrizione
 Sistema completo gestione campionati sim racing Gran Turismo 7 con:
@@ -34,7 +29,7 @@ Sistema completo gestione campionati sim racing Gran Turismo 7 con:
 - Sistema reclami
 - **Sistema crediti API completo**
 
-### ✨ Sistema Crediti API (NEW!)
+### ✨ Sistema Crediti API
 
 #### Features
 - ✅ **1000 crediti** iniziali per ogni pilota
@@ -65,8 +60,8 @@ api_endpoint_costs       → Configurazione costi
 
 1. **Setup Database**
 ```bash
-psql -U postgres -d tlm_db -f tlm_schema.sql
-psql -U postgres -d tlm_db -f tlm_seed_data.sql
+psql 'postgresql://user:pass@host:5432/tlm_db?sslmode=require' -f tlm_schema.sql
+psql 'postgresql://user:pass@host:5432/tlm_db?sslmode=require' -f tlm_seed_data.sql
 ```
 
 2. **Configure Netlify**
@@ -78,7 +73,8 @@ JWT_SECRET=your-secret-key-here
 
 3. **Deploy**
 ```bash
-netlify deploy --prod
+git push origin main
+# Netlify auto-deploy da GitHub
 ```
 
 4. **Test API**
@@ -90,261 +86,251 @@ Vedi guida completa: [TEST_API_GUIDE.md](TEST_API_GUIDE.md)
 - `POST /auth/register` - Registrazione pilota
 - `POST /auth/login` - Login
 
-**Crediti API** (0 crediti)
-- `GET /crediti` - Visualizza saldo
-- `GET /crediti/stats` - Statistiche utilizzo
+**Crediti API** (0-1 crediti)
+- `GET /crediti` - Visualizza saldo (0 crediti)
+- `GET /crediti/stats` - Statistiche utilizzo (0 crediti)
 - `GET /crediti/storico` - Ultimi 100 utilizzi (1 credito)
-- `POST /crediti/ricarica` - Ricarica (solo manager)
+- `POST /crediti/ricarica` - Ricarica (solo manager, 0 crediti)
 
 **Dati Gare** (1-3 crediti)
-- `GET /piloti` (1)
-- `GET /classifica` (2)
-- `GET /gare` (1)
-- `GET /stats` (1)
-- `POST /risultati` (3)
-- `GET /reclami` (2)
-- `POST /reclami` (2)
+- `GET /piloti` - Lista piloti (1 credito)
+- `GET /classifica` - Classifica generale (2 crediti)
+- `GET /gare` - Calendario gare (1 credito)
+- `GET /stats` - Statistiche generali (1 credito)
+- `POST /risultati` - Inserisci risultato (3 crediti)
+- `POST /reclami` - Apri reclamo (2 crediti)
 
 ---
 
-## 🧀 Progetto 2: Carlsberg Ordini Mozzarella
+## 🔧 Tech Stack
 
-### Descrizione
-Web app per gestire ordini settimanali prodotti caseari Bufala Nera D'Angelo per 21 ristoranti Carlsberg Milano.
+### Frontend
+- **HTML5 + CSS3**: Single Page Application
+- **JavaScript Vanilla**: Gestione stato e routing
+- **LocalStorage**: Cache dati e token JWT
 
-### Features
-- ✅ **21 ristoranti** (colonne orizzontali)
-- ✅ **6 prodotti caseari** (righe)
-- ✅ **126 caselle input** ordine
-- ✅ **Calcolo automatico** totali per prodotto
-- ✅ **Validazione** ordine minimo 30 kg
-- ✅ **Colonna Avanzi** per redistribuzione
-- ✅ **Sistema QR Code** per ordini veloci
-- ✅ **Netlify Forms** con email automatiche
-- ✅ **Design responsive** mobile-friendly
+### Backend
+- **Netlify Functions**: Serverless Node.js
+- **PostgreSQL**: Database relazionale (Neon.tech)
+- **JWT**: Autenticazione sicura
+- **bcryptjs**: Password hashing
 
-### 🏪 21 Ristoranti Carlsberg Milano
-```
-Porta Romana, Ripamonti, XXII Marzo, Bicocca, Bovisa,
-Duomo, Centrale, Garibaldi, Lambrate, Brera, Missori,
-Sempione, Corvetto, Lorenteggio, Isola, Forlanini,
-Cenisio, Navigli, Barona, Barrio Alto, Bishops Arms
-```
-
-### 🧀 6 Prodotti Caseari
-```
-1. Mozzarella Nera (€11/kg)
-2. Burrata (€11/kg)
-3. Stracciatella (€11/kg)
-4. Provola (€11/kg)
-5. Bocconcini (€11/kg)
-6. Mozzarelline Piccole - Catering (€11/kg)
-```
-
-### 🚀 Deploy Carlsberg
-
-**Metodo 1: Manuale (veloce)**
-```bash
-# Upload su Netlify
-Drag & drop: carlsberg-ordini.html + thank-you.html
-```
-
-**Metodo 2: GitHub (automatico)**
-1. Collega repo su Netlify
-2. Deploy automatico da branch
-3. Configura email notifications
-
-Vedi guida completa: [DEPLOY_CARLSBERG_GUIDE.md](DEPLOY_CARLSBERG_GUIDE.md)
-
-### 📧 Email Notifications
-
-**Form 1: `ordine-carlsberg`** (form principale)
-- Invia tutti i dati ordine
-- Totale kg ordinati
-- Data/ora ordine
-
-**Form 2: `ordine-qr`** (ordini veloci)
-- Ordini singoli da QR code tavolo
-- Ristorante pre-selezionato
-- Invio immediato
-
-### 📱 QR Codes per Ristoranti
-
-Genera QR code per ogni ristorante:
-```
-https://your-site.netlify.app/ordini?ristorante=Porta+Romana
-https://your-site.netlify.app/ordini?ristorante=Bicocca
-...
-```
-
-Stampa su triangoli da tavolo per ordini veloci!
-
----
-
-## 🛠️ Tech Stack
-
-### TLM
-- **Frontend**: HTML, CSS, JavaScript (Vanilla)
-- **Backend**: Netlify Functions (Node.js)
-- **Database**: PostgreSQL
-- **Auth**: JWT (jsonwebtoken)
-- **Password**: bcrypt
-
-### Carlsberg
-- **Frontend**: HTML, CSS, JavaScript (Vanilla)
-- **Forms**: Netlify Forms
-- **Email**: Netlify Notifications
-- **Deploy**: Netlify Static
-
----
-
-## 📦 Deploy Production
-
-### Step 1: Merge PR
-```bash
-# Dopo review, merge la PR su GitHub
-gh pr merge
-```
-
-### Step 2: Deploy TLM
-```bash
-# Netlify deploierà automaticamente da main branch
-# Oppure manualmente:
-netlify deploy --prod
-```
-
-### Step 3: Configure Database
-```bash
-# Applica schema su DB production
-psql $DATABASE_URL -f tlm_schema.sql
-```
-
-### Step 4: Test
-```bash
-# Test endpoint API
-curl https://tlm-api.netlify.app/.netlify/functions/api/stats
-
-# Test Carlsberg
-open https://carlsberg-ordini.netlify.app/carlsberg-ordini.html
-```
+### Database
+- **PostgreSQL 15+**
+- **SQL Functions**: consuma_crediti(), ricarica_crediti()
+- **Triggers**: Inizializzazione automatica crediti
+- **Transactions**: ACID compliance per crediti
 
 ---
 
 ## 🧪 Testing
 
-### TLM API
-Vedi [TEST_API_GUIDE.md](TEST_API_GUIDE.md) per:
-- Test autenticazione
-- Test sistema crediti
-- Test consumo crediti
-- Test ricariche (manager)
-- Verifiche database
+### Test Rapido Sistema Crediti
 
-### Carlsberg App
-Vedi [DEPLOY_CARLSBERG_GUIDE.md](DEPLOY_CARLSBERG_GUIDE.md) per:
-- Test ordine standard
-- Test ordine QR
-- Test validazioni
-- Test email notifications
-- Test mobile responsive
+```bash
+# Esegui script di test automatico
+./test-credits-production.sh
+```
 
----
+Output atteso:
+```
+✅ Crediti iniziali corretti: 1000
+✅ Consumo crediti funziona: 1000 → 999
+✅ Sistema crediti completamente funzionante!
+```
 
-## 📊 Statistics
+### Test Manuale
 
-### Codice Scritto
-- **1511 linee** di codice
-- **5 files** modificati/creati
-- **4 commits** documentati
+```bash
+# 1. Registrazione
+curl -X POST https://phenomenal-quokka-110828.netlify.app/.netlify/functions/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"nome":"Test","email":"test@tlm.com","password":"test123","psn_id":"TestPSN"}'
 
-### Database
-- **19 tabelle** totali
-- **4 tabelle** crediti API (nuove)
-- **5 funzioni** SQL
-- **3 views** statistiche
+# 2. Salva token
+export TOKEN="eyJ..."
 
-### API Endpoints
-- **15 endpoint** totali TLM
-- **4 endpoint** crediti API (nuovi)
-- **2 forms** Carlsberg
+# 3. Verifica crediti
+curl https://phenomenal-quokka-110828.netlify.app/.netlify/functions/api/crediti \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Vedi guida completa: [TEST_API_GUIDE.md](TEST_API_GUIDE.md)
 
 ---
 
-## 🔒 Security
+## 🚀 Deployment
 
-### TLM API
-- ✅ JWT authentication
-- ✅ Password bcrypt hashing
+### Production
+- **URL**: https://phenomenal-quokka-110828.netlify.app
+- **Database**: Neon PostgreSQL (us-east-2)
+- **Branch**: `main`
+- **Auto-deploy**: ✅ Attivo da GitHub
+
+### Deploy Preview
+- Ogni Pull Request genera un deploy preview automatico
+- URL: `https://deploy-preview-{PR-NUMBER}--phenomenal-quokka-110828.netlify.app`
+
+---
+
+## 📦 Database Schema
+
+### Core Tables (19 tabelle)
+- `piloti` - Utenti registrati
+- `campionati` - Stagioni racing
+- `gare` - Eventi calendario
+- `iscrizioni_campionati` - Iscrizioni piloti
+- `risultati_gare` - Risultati e punti
+- `classifiche` - Ranking generale
+- `reclami` - Sistema dispute
+
+### Credits System (4 tabelle)
+- `api_credits` - Saldo crediti per pilota
+- `api_usage` - Log completo chiamate API
+- `api_credit_recharges` - Storico ricariche
+- `api_endpoint_costs` - Configurazione costi endpoint
+
+---
+
+## 🔐 Security
+
+### Best Practices
+- ✅ JWT tokens con expiry 24h
+- ✅ Password hashed con bcryptjs (10 rounds)
 - ✅ SQL injection protection (parameterized queries)
-- ✅ CORS headers configured
-- ✅ Rate limiting via crediti system
+- ✅ Rate limiting via credits system
+- ✅ HTTPS only
+- ✅ Security headers (CSP, X-Frame-Options, etc.)
 
-### Carlsberg
-- ✅ Netlify Forms spam protection
-- ✅ Honeypot bot detection
-- ✅ Client-side validation
-- ✅ XSS protection headers
-
----
-
-## 📈 Future Enhancements
-
-### TLM
-- [ ] Rate limiting per IP (oltre crediti)
-- [ ] Webhook notifications crediti bassi
-- [ ] Analytics dashboard admin
-- [ ] Export CSV utilizzo API
-- [ ] Auto-refill crediti mensile
-
-### Carlsberg
-- [ ] Dashboard manager ordini
-- [ ] Export Excel ordini
-- [ ] WhatsApp notifications
-- [ ] Storico ordini per ristorante
-- [ ] ML suggerimenti automatici quantità
+### Environment Variables
+```bash
+DATABASE_URL=postgresql://user:pass@host:5432/db?sslmode=require
+JWT_SECRET=strong-random-secret-key-here
+```
 
 ---
 
-## 👥 Contributors
+## 📊 Sistema Crediti - Architettura
 
-- **Claude** - Sistema crediti API TLM + Web app Carlsberg
-- **Team Lion Motorsport** - Requisiti e testing TLM
-- **Carlsberg Milano** - Requisiti e feedback Ordini
+### Flow Consumo Crediti
 
----
+```
+1. Request → Authentication → User ID estratto
+2. Middleware controlla saldo crediti
+3. Se crediti sufficienti:
+   - SQL function consuma_crediti() (TRANSACTION SAFE)
+   - Handler endpoint eseguito
+   - Log API usage salvato
+   - Response 200
+4. Se crediti insufficienti:
+   - Response 429 "Crediti insufficienti"
+```
 
-## 📝 License
+### SQL Functions
 
-Progetti proprietari - Tutti i diritti riservati.
+**consuma_crediti(pilota_id, endpoint, costo)**
+- Lock FOR UPDATE per evitare race conditions
+- Controlla saldo disponibile
+- Aggiorna crediti in transazione atomica
+- Returns TRUE/FALSE
 
----
+**ricarica_crediti(pilota_id, quantita, motivo)**
+- Aggiunge crediti al saldo
+- Log ricarica per audit trail
 
-## 🆘 Support
-
-**Issues TLM:**
-- GitHub Issues: https://github.com/rikas78/team-lion-motorsport/issues
-
-**Carlsberg Support:**
-- Email: ordini@carlsberg-milano.it
-- Tel: +39 XXX XXX XXXX
-
-**Technical Documentation:**
-- API Test Guide: [TEST_API_GUIDE.md](TEST_API_GUIDE.md)
-- Deploy Guide: [DEPLOY_CARLSBERG_GUIDE.md](DEPLOY_CARLSBERG_GUIDE.md)
-
----
-
-## 🎉 Status
-
-✅ **TLM Sistema Crediti**: Production Ready
-✅ **Carlsberg Web App**: Production Ready
-✅ **Database Schema**: Complete
-✅ **Documentation**: Complete
-✅ **Testing Guides**: Complete
-
-**Ultimo aggiornamento:** 06 Novembre 2025
+**get_api_stats(pilota_id)**
+- Statistiche utilizzo API
+- Chiamate oggi/settimana
+- Media response time
 
 ---
 
-**🦁 Powered by Team Lion Motorsport**
-**🧀 Bufala Nera D'Angelo - Caseificio Artigianale**
+## 📈 Monitoring
+
+### Metriche Disponibili
+- Crediti disponibili per pilota
+- Chiamate API per endpoint
+- Response time medio
+- Errori 429 (out of credits)
+- Top consumers
+
+### Dashboard Frontend
+Visibile in `/crediti` dopo login:
+- 💰 Crediti disponibili
+- 📊 Crediti utilizzati totali
+- 📞 Chiamate oggi
+- 📅 Chiamate settimana
+- 📜 Storico ultimi 100 utilizzi
+
+---
+
+## 🐛 Troubleshooting
+
+### Errore "Crediti insufficienti" (429)
+```json
+{"success": false, "error": "Crediti insufficienti"}
+```
+**Soluzione**: Contatta admin per ricarica crediti
+
+### Errore "Token non valido"
+**Cause possibili**:
+1. Token scaduto (>24h)
+2. JWT_SECRET cambiato
+3. Token da ambiente diverso (dev vs prod)
+
+**Soluzione**: Rigenera token con `/auth/login`
+
+### Database Connection Error
+**Verifica**:
+1. DATABASE_URL corretto in Netlify env vars
+2. IP whitelisting su Neon dashboard
+3. SSL mode attivo (`?sslmode=require`)
+
+---
+
+## 📝 Changelog
+
+### v1.2.0 - Sistema Crediti API (2025-01-06)
+- ✨ Aggiunto sistema crediti completo
+- ✨ Middleware consumo automatico
+- ✨ Dashboard frontend crediti
+- ✨ 4 nuove tabelle database
+- ✨ 5 SQL functions + 4 triggers
+- 📝 Documentazione completa TEST_API_GUIDE.md
+
+### v1.1.0 - Database Schema Complete
+- ✨ Aggiunte 3 tabelle mancanti
+- 🐛 Fix 500 errors su endpoint campionati
+- ✨ Colonna creato_da in campionati
+
+### v1.0.0 - Initial Release
+- ✨ Sistema autenticazione JWT
+- ✨ CRUD campionati e gare
+- ✨ Classifiche real-time
+- ✨ Sistema reclami
+
+---
+
+## 👥 Team
+
+**Progetto**: Team Lion Motorsport
+**Sim Racing**: Gran Turismo 7
+**Platform**: PlayStation 5
+
+---
+
+## 📄 License
+
+© 2025 Team Lion Motorsport - All Rights Reserved
+
+---
+
+## 🔗 Links
+
+- **Production**: https://phenomenal-quokka-110828.netlify.app
+- **Netlify Dashboard**: https://app.netlify.com/sites/phenomenal-quokka-110828
+- **Database**: Neon PostgreSQL (us-east-2)
+
+---
+
+**Sistema Crediti API** ⚡ **Production Ready** ✅
