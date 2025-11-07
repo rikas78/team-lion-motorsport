@@ -50,11 +50,25 @@ CREATE TABLE IF NOT EXISTS impostazioni_gara (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabella Iscrizioni Gara
+CREATE TABLE IF NOT EXISTS iscrizioni_gara (
+    id SERIAL PRIMARY KEY,
+    gara_id INTEGER REFERENCES gare(id) ON DELETE CASCADE,
+    pilota_id INTEGER REFERENCES piloti(id) ON DELETE CASCADE,
+    data_iscrizione TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    auto_scelta VARCHAR(100),
+    note TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (gara_id, pilota_id)
+);
+
 -- Indici per Performance
 CREATE INDEX IF NOT EXISTS idx_iscrizioni_campionato ON iscrizioni_campionati(campionato_id);
 CREATE INDEX IF NOT EXISTS idx_iscrizioni_pilota ON iscrizioni_campionati(pilota_id);
 CREATE INDEX IF NOT EXISTS idx_documenti_campionato ON documenti_campionato(campionato_id);
 CREATE INDEX IF NOT EXISTS idx_impostazioni_gara ON impostazioni_gara(gara_id);
+CREATE INDEX IF NOT EXISTS idx_iscrizioni_gara_gara ON iscrizioni_gara(gara_id);
+CREATE INDEX IF NOT EXISTS idx_iscrizioni_gara_pilota ON iscrizioni_gara(pilota_id);
 
 -- Trigger per Update Timestamp
 CREATE TRIGGER iscrizioni_update_timestamp BEFORE UPDATE ON iscrizioni_campionati
