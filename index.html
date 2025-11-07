@@ -3,295 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Lion Motorsport - Dashboard</title>
+    <title>🦁 Team Lion Motorsport</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0a0a0a;
-            color: #ffffff;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        header {
-            background: linear-gradient(135deg, #e10600 0%, #8b0000 100%);
-            padding: 20px 0;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 2.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-
-        nav {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #1a1a1a;
-            border-radius: 8px;
-        }
-
-        .nav-btn {
-            flex: 1;
-            min-width: 120px;
-            padding: 12px 20px;
-            background: #2a2a2a;
-            border: 2px solid #333;
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-
-        .nav-btn:hover {
-            background: #e10600;
-            border-color: #e10600;
-            transform: translateY(-2px);
-        }
-
-        .nav-btn.active {
-            background: #e10600;
-            border-color: #e10600;
-        }
-
-        .section {
-            display: none;
-            padding: 30px;
-            background: #121212;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        h2 {
-            color: #e10600;
-            margin-bottom: 20px;
-            font-size: 2rem;
-            border-bottom: 3px solid #e10600;
-            padding-bottom: 10px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #333;
-        }
-
-        th {
-            background: #1a1a1a;
-            color: #e10600;
-            font-weight: 700;
-        }
-
-        tr:hover {
-            background: #1a1a1a;
-        }
-
-        .position-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            background: #e10600;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-
-        .category-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .badge-ufficiali { background: #4caf50; color: #fff; }
-        .badge-academy { background: #2196f3; color: #fff; }
-        .badge-junior { background: #ff9800; color: #fff; }
-
-        .btn {
-            padding: 12px 24px;
-            background: #e10600;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn:hover {
-            background: #c10500;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(225, 6, 0, 0.3);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #e10600;
-            font-weight: 600;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            background: #1a1a1a;
-            border: 2px solid #333;
-            border-radius: 6px;
-            color: white;
-            font-size: 1rem;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #e10600;
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            background: #333;
-            color: white;
-            border-radius: 8px;
-            z-index: 1000;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(400px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; line-height: 1.6; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        header { background: linear-gradient(135deg, #e10600 0%, #8b0000 100%); padding: 20px 0; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        h1 { text-align: center; font-size: 2.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        nav { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; padding: 15px; background: #1a1a1a; border-radius: 8px; }
+        .nav-btn { flex: 1; min-width: 120px; padding: 12px 20px; background: #2a2a2a; border: 2px solid #333; border-radius: 8px; color: white; cursor: pointer; transition: all 0.3s; font-size: 0.95rem; font-weight: 600; }
+        .nav-btn:hover { background: #e10600; border-color: #e10600; transform: translateY(-2px); }
+        .nav-btn.active { background: #e10600; border-color: #e10600; }
+        .section { display: none; padding: 30px; background: #121212; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .section.active { display: block; }
+        h2 { color: #e10600; margin-bottom: 20px; font-size: 2rem; border-bottom: 3px solid #e10600; padding-bottom: 10px; }
+        h3 { color: #e10600; margin-bottom: 15px; font-size: 1.5rem; }
+        .btn { padding: 12px 24px; background: #e10600; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.3s; }
+        .btn:hover { background: #c10500; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(225, 6, 0, 0.3); }
+        .btn-secondary { background: #333; }
+        .btn-secondary:hover { background: #444; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        .card { padding: 20px; background: #1a1a1a; border: 2px solid #333; border-radius: 12px; transition: all 0.3s; }
+        .card:hover { border-color: #e10600; transform: translateY(-5px); }
+        .card.fire { background: linear-gradient(135deg, #8b0000 0%, #e10600 100%); border: none; }
+        .notification { position: fixed; top: 20px; right: 20px; padding: 15px 25px; background: #333; color: white; border-radius: 8px; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.3); animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .notification.success { background: #4caf50; }
         .notification.error { background: #f44336; }
         .notification.warning { background: #ff9800; }
         .notification.info { background: #2196f3; }
-
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .action-card {
-            padding: 25px;
-            background: #1a1a1a;
-            border: 2px solid #333;
-            border-radius: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .action-card:hover {
-            background: #2a2a2a;
-            border-color: #e10600;
-            transform: translateY(-5px);
-        }
-
-        .action-card h3 {
-            color: #e10600;
-            margin-bottom: 10px;
-            font-size: 1.3rem;
-        }
-
-        .upload-area {
-            padding: 40px;
-            background: #1a1a1a;
-            border: 3px dashed #333;
-            border-radius: 12px;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .upload-area:hover {
-            border-color: #e10600;
-            background: #2a2a2a;
-        }
-
-        .filters {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        .filters select {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        #authSection {
-            max-width: 500px;
-            margin: 50px auto;
-        }
-
-        .auth-tabs {
-            display: flex;
-            gap: 0;
-            margin-bottom: 30px;
-        }
-
-        .auth-tab {
-            flex: 1;
-            padding: 15px;
-            background: #1a1a1a;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .auth-tab.active {
-            background: #e10600;
-        }
-
-        .auth-form {
-            display: none;
-        }
-
-        .auth-form.active {
-            display: block;
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; }
+        th { background: #1a1a1a; color: #e10600; font-weight: 700; }
+        tr:hover { background: #1a1a1a; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 15px; font-size: 0.85rem; font-weight: 600; }
+        .badge-ufficiali { background: #4caf50; color: #fff; }
+        .badge-academy { background: #2196f3; color: #fff; }
+        .badge-junior { background: #ff9800; color: #fff; }
+        .badge-urgente { background: #f44336; color: #fff; }
+        .badge-evento { background: #9c27b0; color: #fff; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #e10600; font-weight: 600; }
+        input, select, textarea { width: 100%; padding: 12px; background: #1a1a1a; border: 2px solid #333; border-radius: 6px; color: white; font-size: 1rem; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #e10600; }
+        .auth-container { max-width: 500px; margin: 50px auto; }
+        .auth-tabs { display: flex; gap: 0; margin-bottom: 30px; }
+        .auth-tab { flex: 1; padding: 15px; background: #1a1a1a; border: none; color: white; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.3s; }
+        .auth-tab.active { background: #e10600; }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+        .top5 { font-size: 0.9rem; }
+        .top5 tr { cursor: pointer; }
+        .comunicazione { padding: 15px; margin: 10px 0; background: #1a1a1a; border-left: 4px solid #e10600; border-radius: 6px; }
+        .comunicazione.urgente { border-left-color: #f44336; }
+        .lions-fire-badge { background: linear-gradient(135deg, #ff6b00, #e10600); padding: 8px 16px; border-radius: 20px; display: inline-block; font-weight: bold; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
     </style>
 </head>
 <body>
@@ -305,42 +71,33 @@
         <nav>
             <button class="nav-btn active" data-section="home">🏠 Home</button>
             <button class="nav-btn" data-section="standings">🏆 Classifiche</button>
-            <button class="nav-btn" data-section="upload">📤 Upload CSV</button>
             <button class="nav-btn" data-section="calendar">📅 Calendario</button>
-            <button class="nav-btn" data-section="pilots">👥 Piloti</button>
-            <button class="nav-btn" data-section="complaints">📋 Reclami</button>
+            <button class="nav-btn" data-section="upload">📤 Upload CSV</button>
             <button class="nav-btn" data-section="profile" id="profileBtn" style="display:none;">👤 Profilo</button>
             <button class="nav-btn" id="loginBtn" data-section="auth">🔐 Login</button>
-            <button class="nav-btn" id="logoutBtn" style="display:none;">🚪 Logout</button>
+            <button class="nav-btn" id="logoutBtn" style="display:none;" onclick="logout()">🚪 Logout</button>
         </nav>
 
         <!-- HOME -->
         <section id="home" class="section active">
             <h2>Dashboard</h2>
-            <div class="quick-actions">
-                <div class="action-card" onclick="showSection('standings')">
-                    <h3>🏆 Classifiche</h3>
-                    <p>Visualizza le classifiche dei campionati</p>
-                </div>
-                <div class="action-card" onclick="showSection('upload')">
-                    <h3>📤 Upload CSV</h3>
-                    <p>Carica i risultati delle gare</p>
-                </div>
-                <div class="action-card" onclick="showSection('calendar')">
-                    <h3>📅 Prossime Gare</h3>
-                    <p>Calendario completo eventi</p>
-                </div>
-                <div class="action-card" onclick="showSection('pilots')">
-                    <h3>👥 Piloti</h3>
-                    <p>37 piloti Team Lion</p>
-                </div>
-            </div>
-            <div id="stats"></div>
+
+            <!-- Comunicazioni Importanti -->
+            <div id="comunicazioniBox"></div>
+
+            <!-- Lions on Fire -->
+            <div id="lionsOnFireBox"></div>
+
+            <!-- Allenamenti Programmati -->
+            <div id="allenamentiBox"></div>
+
+            <!-- TOP 5 Classifiche -->
+            <div id="top5Box"></div>
         </section>
 
         <!-- AUTH -->
         <section id="auth" class="section">
-            <div id="authSection">
+            <div class="auth-container">
                 <div class="auth-tabs">
                     <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
                     <button class="auth-tab" onclick="switchAuthTab('register')">Registrati</button>
@@ -385,11 +142,9 @@
         <!-- STANDINGS -->
         <section id="standings" class="section">
             <h2>Classifiche</h2>
-            <div class="filters">
+            <div class="form-group">
                 <select id="championshipFilter" onchange="loadStandings()">
                     <option value="1">All Traction 4.0</option>
-                    <option value="2">Sprint Series 2025</option>
-                    <option value="3">Endurance Cup 2025</option>
                 </select>
             </div>
             <table>
@@ -397,6 +152,7 @@
                     <tr>
                         <th>Pos</th>
                         <th>Pilota</th>
+                        <th>PSN ID</th>
                         <th>Categoria</th>
                         <th>Punti</th>
                         <th>Vittorie</th>
@@ -408,69 +164,55 @@
             </table>
         </section>
 
-        <!-- UPLOAD CSV -->
-        <section id="upload" class="section">
-            <h2>Upload Risultati Gara</h2>
-            <p style="color: #888; margin-bottom: 20px;">Carica il file CSV con i risultati ufficiali della gara</p>
-
-            <div class="form-group">
-                <label>Seleziona Gara</label>
-                <select id="garaSelect"></select>
-            </div>
-
-            <div class="upload-area">
-                <h3>📄 Formato CSV</h3>
-                <p>posizione,pilota_id,psn_id,tempo_totale,giro_veloce,auto_utilizzata</p>
-                <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Es: 1,10,rikas78,01:25:30.123,02:15.456,Porsche 911 GT3 R</p>
-                <input type="file" id="csvFile" accept=".csv" style="margin-top: 20px;">
-            </div>
-
-            <button class="btn" onclick="uploadCSV()">📤 Carica Risultati</button>
-            <div id="uploadStatus" style="margin-top: 20px;"></div>
-        </section>
-
         <!-- CALENDAR -->
         <section id="calendar" class="section">
             <h2>Calendario Gare</h2>
             <div id="calendarList"></div>
         </section>
 
-        <!-- PILOTS -->
-        <section id="pilots" class="section">
-            <h2>Piloti</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Nome</th>
-                        <th>PSN ID</th>
-                        <th>GT ID</th>
-                        <th>Categoria</th>
-                    </tr>
-                </thead>
-                <tbody id="pilotsTable"></tbody>
-            </table>
-        </section>
-
-        <!-- COMPLAINTS -->
-        <section id="complaints" class="section">
-            <h2>Reclami</h2>
-            <button class="btn" onclick="showNewComplaintForm()">➕ Nuovo Reclamo</button>
-            <div id="complaintsList" style="margin-top: 20px;"></div>
+        <!-- UPLOAD CSV -->
+        <section id="upload" class="section">
+            <h2>Upload Risultati Gara</h2>
+            <p style="color: #888; margin-bottom: 20px;">Carica il file CSV con i risultati ufficiali</p>
+            <div class="form-group">
+                <label>Seleziona Gara</label>
+                <select id="garaSelect"></select>
+            </div>
+            <div style="padding: 40px; background: #1a1a1a; border: 3px dashed #333; border-radius: 12px; text-align: center; margin: 20px 0;">
+                <h3>📄 Formato CSV</h3>
+                <p>posizione,pilota_id,psn_id,tempo_totale,giro_veloce,auto_utilizzata</p>
+                <input type="file" id="csvFile" accept=".csv" style="margin-top: 20px;">
+            </div>
+            <button class="btn" onclick="uploadCSV()">📤 Carica Risultati</button>
+            <div id="uploadStatus" style="margin-top: 20px;"></div>
         </section>
 
         <!-- PROFILE -->
         <section id="profile" class="section">
-            <h2>Profilo</h2>
+            <h2>Il Mio Profilo</h2>
             <div id="profileData"></div>
+        </section>
+
+        <!-- LIONS ON FIRE DETAIL -->
+        <section id="lionsDetail" class="section">
+            <h2>🔥 Lions on Fire - Live Oggi</h2>
+            <div id="lionsDetailContent"></div>
+        </section>
+
+        <!-- STANDINGS DETAIL -->
+        <section id="standingsDetail" class="section">
+            <button class="btn-secondary" onclick="showSection('standings')" style="margin-bottom: 20px;">← Indietro</button>
+            <h2>Classifica Dettagliata</h2>
+            <div id="standingsDetailContent"></div>
         </section>
     </div>
 
     <script>
         const API_URL = '/.netlify/functions/api';
         let currentUser = null;
+        let campionatiData = [];
 
-        // AUTH
+        // ========== AUTH ==========
         function switchAuthTab(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
@@ -481,24 +223,20 @@
         async function handleLogin(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
-            const email = formData.get('email');
-            const password = formData.get('password');
-
             try {
                 const res = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email, password})
+                    body: JSON.stringify(Object.fromEntries(formData))
                 });
-
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error);
-
                 currentUser = data.user;
                 localStorage.setItem('token', data.token);
                 showNotification('✅ Login effettuato!', 'success');
                 updateUIAfterLogin();
                 showSection('home');
+                loadHomeData();
             } catch (err) {
                 showNotification('❌ ' + err.message, 'error');
             }
@@ -507,23 +245,20 @@
         async function handleRegister(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
-
             try {
                 const res = await fetch(`${API_URL}/auth/register`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(Object.fromEntries(formData))
                 });
-
                 const result = await res.json();
                 if (!res.ok) throw new Error(result.error);
-
                 currentUser = result.user;
                 localStorage.setItem('token', result.token);
                 showNotification('✅ Registrazione completata!', 'success');
                 updateUIAfterLogin();
                 showSection('home');
+                loadHomeData();
             } catch (err) {
                 showNotification('❌ ' + err.message, 'error');
             }
@@ -545,17 +280,16 @@
             document.getElementById('profileBtn').style.display = '';
         }
 
-        // NAVIGATION
+        // ========== NAVIGATION ==========
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
             document.querySelector(`[data-section="${sectionId}"]`)?.classList.add('active');
 
-            // Load data when switching sections
+            if (sectionId === 'home') loadHomeData();
             if (sectionId === 'standings') loadStandings();
             if (sectionId === 'calendar') loadCalendar();
-            if (sectionId === 'pilots') loadPilots();
             if (sectionId === 'upload') loadGareForUpload();
             if (sectionId === 'profile') loadProfile();
         }
@@ -567,21 +301,277 @@
             });
         });
 
-        document.getElementById('logoutBtn').addEventListener('click', logout);
+        // ========== HOME DATA ==========
+        async function loadHomeData() {
+            await Promise.all([
+                loadComunicazioni(),
+                loadLionsOnFire(),
+                loadAllenamenti(),
+                loadTop5Classifiche()
+            ]);
+        }
 
-        // LOAD DATA
+        async function loadComunicazioni() {
+            try {
+                const res = await fetch(`${API_URL}/comunicazioni`);
+                const data = await res.json();
+                const box = document.getElementById('comunicazioniBox');
+                if (data.comunicazioni && data.comunicazioni.length > 0) {
+                    box.innerHTML = `
+                        <h3>📢 Comunicazioni Importanti</h3>
+                        ${data.comunicazioni.map(c => `
+                            <div class="comunicazione ${c.tipo.toLowerCase()}">
+                                <strong>${c.titolo}</strong>
+                                ${c.tipo !== 'Info' ? `<span class="badge badge-${c.tipo.toLowerCase()}">${c.tipo}</span>` : ''}
+                                <p>${c.messaggio}</p>
+                                <small>${new Date(c.created_at).toLocaleDateString('it-IT')}</small>
+                            </div>
+                        `).join('')}
+                    `;
+                } else {
+                    box.innerHTML = '';
+                }
+            } catch (err) {
+                console.error('Errore caricamento comunicazioni:', err);
+            }
+        }
+
+        async function loadLionsOnFire() {
+            try {
+                const res = await fetch(`${API_URL}/lions-on-fire`);
+                const data = await res.json();
+                const box = document.getElementById('lionsOnFireBox');
+
+                if (data.lions_on_fire && data.lions_on_fire.length > 0) {
+                    box.innerHTML = `
+                        <div class="card fire" onclick="showLionsDetail()" style="cursor: pointer;">
+                            <h3>🔥 <span class="lions-fire-badge">LIONS ON FIRE</span></h3>
+                            <p style="font-size: 1.2rem; margin: 15px 0;">
+                                <strong>${data.lions_on_fire[0].gara_nome}</strong>
+                            </p>
+                            <p>📍 ${data.lions_on_fire[0].circuito}</p>
+                            <p>🏁 ${data.lions_on_fire[0].totale_iscritti || 0} piloti in gara</p>
+                            <p style="margin-top: 15px; font-size: 1.1rem;">
+                                👉 <strong>Clicca per vedere i piloti e lo streaming</strong>
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    box.innerHTML = '';
+                }
+            } catch (err) {
+                console.error('Errore caricamento Lions on Fire:', err);
+            }
+        }
+
+        async function showLionsDetail() {
+            try {
+                const res = await fetch(`${API_URL}/lions-on-fire`);
+                const data = await res.json();
+
+                if (data.lions_on_fire && data.lions_on_fire.length > 0) {
+                    const lof = data.lions_on_fire[0];
+                    document.getElementById('lionsDetailContent').innerHTML = `
+                        <div class="card fire">
+                            <h3>${lof.gara_nome}</h3>
+                            <p><strong>Campionato:</strong> ${lof.campionato_nome}</p>
+                            <p><strong>Circuito:</strong> ${lof.circuito}</p>
+                            <p><strong>Data:</strong> ${new Date(lof.data_gara).toLocaleString('it-IT')}</p>
+                            ${lof.canale_streaming ? `
+                                <div style="margin: 20px 0; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                                    <h4>📺 Streaming Live</h4>
+                                    <a href="${lof.canale_streaming}" target="_blank" class="btn" style="display: inline-block; text-decoration: none; margin-top: 10px;">
+                                        🎥 Guarda Live su Twitch
+                                    </a>
+                                </div>
+                            ` : ''}
+                            <h4 style="margin-top: 30px;">👥 Piloti in Gara (${lof.totale_iscritti || 0})</h4>
+                            <div style="margin-top: 15px;">
+                                ${lof.piloti_iscritti ? lof.piloti_iscritti.map(p => `
+                                    <div style="padding: 10px; background: rgba(0,0,0,0.3); margin: 5px 0; border-radius: 6px;">
+                                        ${p}
+                                    </div>
+                                `).join('') : '<p>Nessun pilota iscritto ancora</p>'}
+                            </div>
+                        </div>
+                        <button class="btn-secondary" onclick="showSection('home')" style="margin-top: 20px;">← Torna alla Home</button>
+                    `;
+                    showSection('lionsDetail');
+                }
+            } catch (err) {
+                showNotification('Errore caricamento dettagli', 'error');
+            }
+        }
+
+        async function loadAllenamenti() {
+            try {
+                const res = await fetch(`${API_URL}/allenamenti`);
+                const data = await res.json();
+                const box = document.getElementById('allenamentiBox');
+
+                if (data.allenamenti && data.allenamenti.length > 0) {
+                    box.innerHTML = `
+                        <h3>🏋️ Allenamenti Programmati</h3>
+                        <div class="grid">
+                            ${data.allenamenti.slice(0, 3).map(a => `
+                                <div class="card">
+                                    <h4>${a.titolo}</h4>
+                                    <p>📅 ${new Date(a.data_allenamento).toLocaleString('it-IT')}</p>
+                                    <p>📍 ${a.circuito || 'Da definire'}</p>
+                                    <p>👥 ${a.totale_iscritti || 0}/${a.max_partecipanti || '∞'} iscritti</p>
+                                    ${currentUser ? `
+                                        <button class="btn" onclick="iscriviAllenamento(${a.id})" style="margin-top: 10px;">Iscriviti</button>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    box.innerHTML = '';
+                }
+            } catch (err) {
+                console.error('Errore caricamento allenamenti:', err);
+            }
+        }
+
+        async function iscriviAllenamento(id) {
+            if (!currentUser) {
+                showNotification('Devi effettuare il login', 'warning');
+                return;
+            }
+            try {
+                const res = await fetch(`${API_URL}/allenamenti/${id}/iscrizione`, {
+                    method: 'POST',
+                    headers: {'Authorization': `Bearer ${localStorage.getItem('token')}`}
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                showNotification('✅ Iscrizione effettuata!', 'success');
+                loadAllenamenti();
+            } catch (err) {
+                showNotification('❌ ' + err.message, 'error');
+            }
+        }
+
+        async function loadTop5Classifiche() {
+            try {
+                const res = await fetch(`${API_URL}/campionati`);
+                const data = await res.json();
+                campionatiData = data.campionati || [];
+
+                const box = document.getElementById('top5Box');
+                if (campionatiData.length > 0) {
+                    const promises = campionatiData.slice(0, 2).map(async c => {
+                        const classRes = await fetch(`${API_URL}/classifica?campionato_id=${c.id}`);
+                        const classData = await classRes.json();
+                        return { campionato: c, classifica: classData.classifica || [] };
+                    });
+
+                    const results = await Promise.all(promises);
+
+                    box.innerHTML = `
+                        <h3>🏆 Classifiche Campionati</h3>
+                        <div class="grid">
+                            ${results.map(r => `
+                                <div class="card" onclick="showStandingsDetail(${r.campionato.id})" style="cursor: pointer;">
+                                    <h4>${r.campionato.nome}</h4>
+                                    <table class="top5">
+                                        <thead>
+                                            <tr><th>Pos</th><th>Pilota</th><th>Punti</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            ${r.classifica.slice(0, 5).map((p, i) => `
+                                                <tr>
+                                                    <td>${i+1}</td>
+                                                    <td>${p.nome}</td>
+                                                    <td><strong>${p.punti}</strong></td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                    <p style="margin-top: 10px; color: #e10600;">
+                                        <strong>👉 Clicca per vedere classifica completa</strong>
+                                    </p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error('Errore caricamento classifiche:', err);
+            }
+        }
+
+        async function showStandingsDetail(campionatoId) {
+            try {
+                const res = await fetch(`${API_URL}/classifica/${campionatoId}/dettagli`);
+                const data = await res.json();
+
+                document.getElementById('standingsDetailContent').innerHTML = `
+                    <div class="card">
+                        <h3>${data.campionato.nome}</h3>
+                        <p>${data.campionato.descrizione || ''}</p>
+                        <div class="grid" style="margin: 20px 0;">
+                            <div class="card">
+                                <h4>Totale Piloti</h4>
+                                <p style="font-size: 2rem; font-weight: bold; color: #e10600;">${data.statistiche.totale_piloti || 0}</p>
+                            </div>
+                            <div class="card">
+                                <h4>Punti Leader</h4>
+                                <p style="font-size: 2rem; font-weight: bold; color: #e10600;">${data.statistiche.punti_leader || 0}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pos</th>
+                                <th>#</th>
+                                <th>Pilota</th>
+                                <th>PSN ID</th>
+                                <th>Categoria</th>
+                                <th>Punti</th>
+                                <th>Vittorie</th>
+                                <th>Podi</th>
+                                <th>Gare</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.classifica.map(p => `
+                                <tr>
+                                    <td><strong>${p.posizione_attuale || '-'}</strong></td>
+                                    <td>${p.numero_gara || '-'}</td>
+                                    <td><strong>${p.nome}</strong></td>
+                                    <td>${p.psn_id}</td>
+                                    <td><span class="badge badge-${p.categoria.toLowerCase()}">${p.categoria}</span></td>
+                                    <td><strong>${p.punti_totali || 0}</strong></td>
+                                    <td>🏆 ${p.vittorie || 0}</td>
+                                    <td>🥇 ${p.podi || 0}</td>
+                                    <td>${p.gare_disputate || 0}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                showSection('standingsDetail');
+            } catch (err) {
+                showNotification('Errore caricamento dettagli', 'error');
+            }
+        }
+
+        // ========== STANDINGS ==========
         async function loadStandings() {
             const champId = document.getElementById('championshipFilter').value;
             try {
                 const res = await fetch(`${API_URL}/classifica?campionato_id=${champId}`);
                 const data = await res.json();
-
                 const tbody = document.getElementById('standingsTable');
                 tbody.innerHTML = data.classifica.map((p, i) => `
                     <tr>
-                        <td><span class="position-badge">${i + 1}</span></td>
+                        <td><strong>${i + 1}</strong></td>
                         <td><strong>${p.nome}</strong></td>
-                        <td><span class="category-badge badge-${p.categoria.toLowerCase()}">${p.categoria}</span></td>
+                        <td>${p.psn_id || '-'}</td>
+                        <td><span class="badge badge-${p.categoria.toLowerCase()}">${p.categoria}</span></td>
                         <td><strong>${p.punti}</strong></td>
                         <td>🏆 ${p.vittorie}</td>
                         <td>🥇 ${p.podi}</td>
@@ -593,17 +583,17 @@
             }
         }
 
+        // ========== CALENDAR ==========
         async function loadCalendar() {
             try {
                 const res = await fetch(`${API_URL}/gare?campionato_id=1`);
                 const data = await res.json();
-
                 document.getElementById('calendarList').innerHTML = data.gare.map(g => `
-                    <div style="background: #1a1a1a; padding: 20px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #e10600;">
-                        <h3 style="color: #e10600;">${g.nome}</h3>
+                    <div class="card">
+                        <h3>${g.nome}</h3>
                         <p>📍 ${g.circuito}</p>
-                        <p>📅 ${new Date(g.data_gara).toLocaleDateString('it-IT')}</p>
-                        <p>⏱️ ${g.durata_minuti} minuti | ${g.tipo_trazione}</p>
+                        <p>📅 ${new Date(g.data_gara).toLocaleString('it-IT')}</p>
+                        <p>⏱️ ${g.durata_minuti} min | ${g.tipo_trazione}</p>
                         <p>Status: <strong>${g.status}</strong></p>
                     </div>
                 `).join('');
@@ -612,31 +602,11 @@
             }
         }
 
-        async function loadPilots() {
-            try {
-                const res = await fetch(`${API_URL}/piloti`);
-                const data = await res.json();
-
-                const tbody = document.getElementById('pilotsTable');
-                tbody.innerHTML = data.piloti.map(p => `
-                    <tr>
-                        <td><strong>${p.numero_gara || '-'}</strong></td>
-                        <td>${p.nome}</td>
-                        <td>${p.psn_id}</td>
-                        <td>${p.gt_id || '-'}</td>
-                        <td><span class="category-badge badge-${p.categoria.toLowerCase()}">${p.categoria}</span></td>
-                    </tr>
-                `).join('');
-            } catch (err) {
-                showNotification('Errore caricamento piloti', 'error');
-            }
-        }
-
+        // ========== UPLOAD CSV ==========
         async function loadGareForUpload() {
             try {
                 const res = await fetch(`${API_URL}/gare`);
                 const data = await res.json();
-
                 const select = document.getElementById('garaSelect');
                 select.innerHTML = data.gare.map(g =>
                     `<option value="${g.id}">${g.nome} - ${new Date(g.data_gara).toLocaleDateString('it-IT')}</option>`
@@ -646,89 +616,111 @@
             }
         }
 
+        async function uploadCSV() {
+            const garaId = document.getElementById('garaSelect').value;
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                showNotification('❌ Seleziona un file CSV', 'error');
+                return;
+            }
+            if (!currentUser) {
+                showNotification('❌ Effettua il login', 'error');
+                return;
+            }
+            try {
+                const csvData = await file.text();
+                const res = await fetch(`${API_URL}/gare/${garaId}/upload-csv`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ csvData })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                showNotification('✅ ' + data.message, 'success');
+                document.getElementById('uploadStatus').innerHTML = `
+                    <div class="card" style="border-color: #4caf50;">
+                        <h4 style="color: #4caf50;">✅ Upload Completato!</h4>
+                        <p>${data.message}</p>
+                    </div>
+                `;
+            } catch (err) {
+                showNotification('❌ ' + err.message, 'error');
+            }
+        }
+
+        // ========== PROFILE ==========
         async function loadProfile() {
             if (!currentUser) {
                 document.getElementById('profileData').innerHTML = '<p>Effettua il login per vedere il tuo profilo</p>';
                 return;
             }
-
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`${API_URL}/auth/me`, {
-                    headers: {'Authorization': `Bearer ${token}`}
-                });
-                const data = await res.json();
+                const [profileRes, statsRes, gareRes] = await Promise.all([
+                    fetch(`${API_URL}/auth/me`, { headers: {'Authorization': `Bearer ${token}`}}),
+                    fetch(`${API_URL}/piloti/${currentUser.id}/stats`),
+                    fetch(`${API_URL}/piloti/${currentUser.id}/gare`)
+                ]);
+                const profile = await profileRes.json();
+                const stats = await statsRes.json();
+                const gare = await gareRes.json();
 
                 document.getElementById('profileData').innerHTML = `
-                    <div style="background: #1a1a1a; padding: 30px; border-radius: 12px;">
-                        <h3 style="color: #e10600; margin-bottom: 20px;">👤 ${data.nome}</h3>
-                        <p><strong>Email:</strong> ${data.email}</p>
-                        <p><strong>PSN ID:</strong> ${data.psn_id}</p>
-                        <p><strong>Numero Gara:</strong> ${data.numero_gara || 'Non assegnato'}</p>
-                        <p><strong>Categoria:</strong> <span class="category-badge badge-${data.categoria.toLowerCase()}">${data.categoria}</span></p>
-                        <p><strong>Ruolo:</strong> ${data.ruolo}</p>
+                    <div class="grid">
+                        <div class="card">
+                            <h3>👤 ${profile.nome}</h3>
+                            <p><strong>Email:</strong> ${profile.email}</p>
+                            <p><strong>PSN ID:</strong> ${profile.psn_id}</p>
+                            <p><strong>Numero Gara:</strong> ${profile.numero_gara || 'Non assegnato'}</p>
+                            <p><strong>Categoria:</strong> <span class="badge badge-${profile.categoria.toLowerCase()}">${profile.categoria}</span></p>
+                            <p><strong>Ruolo:</strong> ${profile.ruolo}</p>
+                        </div>
+                        <div class="card">
+                            <h3>📊 Statistiche</h3>
+                            <p><strong>Punti Totali:</strong> ${stats.pilota.punti_totali || 0}</p>
+                            <p><strong>Vittorie:</strong> 🏆 ${stats.pilota.vittorie_totali || 0}</p>
+                            <p><strong>Podi:</strong> 🥇 ${stats.pilota.podi_totali || 0}</p>
+                            <p><strong>Gare:</strong> ${stats.pilota.gare_totali || 0}</p>
+                            <p><strong>Giri Veloci:</strong> ⚡ ${stats.pilota.giri_veloci || 0}</p>
+                            <p><strong>Media Posizione:</strong> ${stats.pilota.media_posizione_arrivo || '-'}</p>
+                        </div>
                     </div>
+                    <h3 style="margin-top: 30px;">🏁 Ultime Gare</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Gara</th>
+                                <th>Campionato</th>
+                                <th>Posizione</th>
+                                <th>Punti</th>
+                                <th>Tempo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${stats.ultime_gare && stats.ultime_gare.length > 0 ? stats.ultime_gare.map(g => `
+                                <tr>
+                                    <td>${new Date(g.data_gara).toLocaleDateString('it-IT')}</td>
+                                    <td>${g.gara_nome}</td>
+                                    <td>${g.campionato_nome}</td>
+                                    <td><strong>${g.posizione_finale || '-'}</strong></td>
+                                    <td>${g.punti_assegnati || 0}</td>
+                                    <td>${g.tempo_totale || '-'}</td>
+                                </tr>
+                            `).join('') : '<tr><td colspan="6">Nessuna gara disputata</td></tr>'}
+                        </tbody>
+                    </table>
                 `;
             } catch (err) {
                 showNotification('Errore caricamento profilo', 'error');
             }
         }
 
-        // UPLOAD CSV
-        async function uploadCSV() {
-            const garaId = document.getElementById('garaSelect').value;
-            const fileInput = document.getElementById('csvFile');
-            const file = fileInput.files[0];
-
-            if (!file) {
-                showNotification('❌ Seleziona un file CSV', 'error');
-                return;
-            }
-
-            if (!currentUser) {
-                showNotification('❌ Effettua il login', 'error');
-                return;
-            }
-
-            try {
-                const csvData = await file.text();
-                const token = localStorage.getItem('token');
-
-                const res = await fetch(`${API_URL}/gare/${garaId}/upload-csv`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ csvData })
-                });
-
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error);
-
-                showNotification('✅ ' + data.message, 'success');
-                document.getElementById('uploadStatus').innerHTML = `
-                    <div style="padding: 20px; background: #1a1a1a; border-radius: 8px; border-left: 4px solid #4caf50;">
-                        <h4 style="color: #4caf50;">✅ Upload Completato!</h4>
-                        <p>${data.message}</p>
-                        ${data.errors ? `<p style="color: #ff9800;">⚠️ Alcuni errori: ${data.errors.length}</p>` : ''}
-                    </div>
-                `;
-
-                // Reload standings
-                loadStandings();
-            } catch (err) {
-                showNotification('❌ ' + err.message, 'error');
-                document.getElementById('uploadStatus').innerHTML = `
-                    <div style="padding: 20px; background: #1a1a1a; border-radius: 8px; border-left: 4px solid #f44336;">
-                        <h4 style="color: #f44336;">❌ Errore Upload</h4>
-                        <p>${err.message}</p>
-                    </div>
-                `;
-            }
-        }
-
-        // NOTIFICATIONS
+        // ========== UTILS ==========
         function showNotification(message, type = 'info') {
             const notif = document.createElement('div');
             notif.className = `notification ${type}`;
@@ -737,19 +729,8 @@
             setTimeout(() => notif.remove(), 4000);
         }
 
-        // NEW COMPLAINT
-        function showNewComplaintForm() {
-            if (!currentUser) {
-                showNotification('❌ Effettua il login per inviare reclami', 'error');
-                return;
-            }
-            // TODO: Add complaint form
-            showNotification('Funzionalità in arrivo', 'info');
-        }
-
-        // INIT
+        // ========== INIT ==========
         async function init() {
-            // Check if logged in
             const token = localStorage.getItem('token');
             if (token) {
                 try {
@@ -764,12 +745,9 @@
                     console.error('Token verification failed');
                 }
             }
-
-            // Load initial data
-            loadStandings();
+            loadHomeData();
         }
 
-        // Start app
         init();
     </script>
 </body>
