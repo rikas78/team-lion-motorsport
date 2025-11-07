@@ -218,6 +218,45 @@ exports.handler = async (event) => {
             return await getPilotaCampionati(pilotaId);
         }
 
+        // COMUNICAZIONI
+        if (path === '/comunicazioni' && method === 'GET') {
+            return await getComunicazioni();
+        }
+
+        if (path === '/comunicazioni' && method === 'POST') {
+            return await createComunicazione(event.body, user);
+        }
+
+        // LIONS ON FIRE
+        if (path === '/lions-on-fire' && method === 'GET') {
+            return await getLionsOnFire();
+        }
+
+        // ALLENAMENTI
+        if (path === '/allenamenti' && method === 'GET') {
+            return await getAllenamenti();
+        }
+
+        if (path === '/allenamenti' && method === 'POST') {
+            return await createAllenamento(event.body, user);
+        }
+
+        if (path.match(/^\/allenamenti\/\d+\/iscrizione$/) && method === 'POST') {
+            const allenamentoId = path.split('/')[2];
+            return await iscriviAllenamento(allenamentoId, user);
+        }
+
+        if (path.match(/^\/allenamenti\/\d+\/iscrizione$/) && method === 'DELETE') {
+            const allenamentoId = path.split('/')[2];
+            return await cancellaIscrizioneAllenamento(allenamentoId, user);
+        }
+
+        // CLASSIFICA DETTAGLIATA
+        if (path.match(/^\/classifica\/\d+\/dettagli$/) && method === 'GET') {
+            const campionatoId = path.split('/')[2];
+            return await getClassificaDettagliata(campionatoId);
+        }
+
         return sendResponse(404, { success: false, error: 'Route non trovata' });
 
     } catch (error) {
@@ -1195,6 +1234,246 @@ const getPilotaGare = async (pilotaId) => {
         return sendResponse(200, {
             success: true,
             gare: result.rows
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+// ========== COMUNICAZIONI ==========
+
+const getComunicazioni = async () => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+        const result = await client.query(`
+            SELECT *
+            FROM comunicazioni
+            WHERE attiva = true
+              AND (data_fine IS NULL OR data_fine >= CURRENT_TIMESTAMP)
+            ORDER BY priorita DESC, created_at DESC
+            LIMIT 10
+        `);
+
+        return sendResponse(200, {
+            success: true,
+            comunicazioni: result.rows
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const createComunicazione = async (body, user) => {
+    const { titolo, messaggio, tipo, priorita, data_fine } = JSON.parse(body);
+
+    const client = getDBClient();
+    try {
+        await client.connect();
+
+        // Verifica che sia manager
+        const userCheck = await client.query('SELECT ruolo FROM piloti WHERE id = $1', [user.id]);
+        if (userCheck.rows.length === 0 || userCheck.rows[0].ruolo !== 'manager') {
+            return sendResponse(403, { success: false, error: 'Solo i manager possono creare comunicazioni' });
+        }
+
+        await client.query(`
+            INSERT INTO comunicazioni (titolo, messaggio, tipo, priorita, data_fine, creato_da)
+            VALUES ($1, $2, $3, $4, $5, $6)
+        `, [titolo, messaggio, tipo, priorita, data_fine, user.id]);
+
+        return sendResponse(201, {
+            success: true,
+            message: 'Comunicazione creata'
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+// ========== LIONS ON FIRE ==========
+
+const getLionsOnFire = async () => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+
+        // Aggiorna status (disattiva scaduti)
+        await client.query('SELECT disattiva_lions_on_fire_scaduti()');
+
+        const result = await client.query(`
+            SELECT * FROM v_lions_on_fire_oggi
+        `);
+
+        return sendResponse(200, {
+            success: true,
+            lions_on_fire: result.rows
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+// ========== ALLENAMENTI ==========
+
+const getAllenamenti = async () => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+
+        // Aggiorna status allenamenti
+        await client.query('SELECT aggiorna_status_allenamenti()');
+
+        const result = await client.query(`
+            SELECT * FROM v_prossimi_allenamenti
+        `);
+
+        return sendResponse(200, {
+            success: true,
+            allenamenti: result.rows
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const createAllenamento = async (body, user) => {
+    const { titolo, descrizione, data_allenamento, durata_minuti, circuito, tipo_trazione, max_partecipanti, canale_streaming } = JSON.parse(body);
+
+    const client = getDBClient();
+    try {
+        await client.connect();
+
+        // Verifica che sia manager
+        const userCheck = await client.query('SELECT ruolo FROM piloti WHERE id = $1', [user.id]);
+        if (userCheck.rows.length === 0 || userCheck.rows[0].ruolo !== 'manager') {
+            return sendResponse(403, { success: false, error: 'Solo i manager possono creare allenamenti' });
+        }
+
+        const result = await client.query(`
+            INSERT INTO allenamenti (titolo, descrizione, data_allenamento, durata_minuti, circuito, tipo_trazione, max_partecipanti, canale_streaming, creato_da)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            RETURNING id
+        `, [titolo, descrizione, data_allenamento, durata_minuti, circuito, tipo_trazione, max_partecipanti, canale_streaming, user.id]);
+
+        return sendResponse(201, {
+            success: true,
+            allenamento_id: result.rows[0].id,
+            message: 'Allenamento creato'
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const iscriviAllenamento = async (allenamentoId, user) => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+
+        // Verifica che l'allenamento esista e non sia pieno
+        const allenamento = await client.query(`
+            SELECT a.max_partecipanti, COUNT(ia.id) as iscritti
+            FROM allenamenti a
+            LEFT JOIN iscrizioni_allenamenti ia ON ia.allenamento_id = a.id
+            WHERE a.id = $1
+            GROUP BY a.id, a.max_partecipanti
+        `, [allenamentoId]);
+
+        if (allenamento.rows.length === 0) {
+            return sendResponse(404, { success: false, error: 'Allenamento non trovato' });
+        }
+
+        const { max_partecipanti, iscritti } = allenamento.rows[0];
+        if (max_partecipanti && iscritti >= max_partecipanti) {
+            return sendResponse(400, { success: false, error: 'Allenamento completo' });
+        }
+
+        // Verifica che non sia già iscritto
+        const check = await client.query(`
+            SELECT id FROM iscrizioni_allenamenti
+            WHERE allenamento_id = $1 AND pilota_id = $2
+        `, [allenamentoId, user.id]);
+
+        if (check.rows.length > 0) {
+            return sendResponse(400, { success: false, error: 'Già iscritto a questo allenamento' });
+        }
+
+        await client.query(`
+            INSERT INTO iscrizioni_allenamenti (allenamento_id, pilota_id)
+            VALUES ($1, $2)
+        `, [allenamentoId, user.id]);
+
+        return sendResponse(200, {
+            success: true,
+            message: 'Iscrizione effettuata'
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+const cancellaIscrizioneAllenamento = async (allenamentoId, user) => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+
+        await client.query(`
+            DELETE FROM iscrizioni_allenamenti
+            WHERE allenamento_id = $1 AND pilota_id = $2
+        `, [allenamentoId, user.id]);
+
+        return sendResponse(200, {
+            success: true,
+            message: 'Iscrizione cancellata'
+        });
+    } finally {
+        await client.end();
+    }
+};
+
+// ========== CLASSIFICA DETTAGLIATA ==========
+
+const getClassificaDettagliata = async (campionatoId) => {
+    const client = getDBClient();
+    try {
+        await client.connect();
+
+        // Classifica completa
+        const classifica = await client.query(`
+            SELECT
+                c.*,
+                p.nome,
+                p.psn_id,
+                p.categoria,
+                p.numero_gara
+            FROM classifiche c
+            JOIN piloti p ON p.id = c.pilota_id
+            WHERE c.campionato_id = $1
+            ORDER BY c.posizione_attuale ASC
+        `, [campionatoId]);
+
+        // Info campionato
+        const campionato = await client.query(`
+            SELECT * FROM campionati WHERE id = $1
+        `, [campionatoId]);
+
+        // Statistiche campionato
+        const stats = await client.query(`
+            SELECT
+                COUNT(DISTINCT pilota_id) as totale_piloti,
+                COUNT(DISTINCT id) as totale_gare,
+                MAX(punti_totali) as punti_leader
+            FROM classifiche c
+            JOIN gare g ON g.campionato_id = c.campionato_id
+            WHERE c.campionato_id = $1
+        `, [campionatoId]);
+
+        return sendResponse(200, {
+            success: true,
+            campionato: campionato.rows[0],
+            classifica: classifica.rows,
+            statistiche: stats.rows[0]
         });
     } finally {
         await client.end();
