@@ -47,7 +47,7 @@
 </div>
 <div class="card">
 <div class="rowhead"><h2>4 · Verifica e correggi i risultati</h2><button class="secondary small no-print" id="addRow">+ Aggiungi pilota</button></div>
-<div class="table-wrap"><table><thead><tr><th>Pos.</th><th>Pilota / PSN ID</th><th>Punti</th><th>Pole</th><th>Giro veloce</th><th>Presenza</th><th class="no-print"></th></tr></thead><tbody id="resultRows"><tr><td colspan="7" class="empty">Carica una foto o aggiungi manualmente i piloti.</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Pos.</th><th>Pilota / PSN ID</th><th>Tempo totale</th><th>Punti</th><th>Pole</th><th>Giro veloce</th><th>Presenza</th><th class="no-print"></th></tr></thead><tbody id="resultRows"><tr><td colspan="7" class="empty">Carica una foto o aggiungi manualmente i piloti.</td></tr></tbody></table></div>
 <div class="actions no-print"><button id="saveRace">Salva risultati e aggiorna classifica</button><button class="secondary" id="printRace">Stampa / PDF gara</button><button class="ghost" id="exportRace">Esporta CSV gara</button></div>
 <div id="saveMsg" class="tiny" style="margin-top:10px"></div>
 </div>
@@ -66,12 +66,26 @@
 <div class="card"><div class="rowhead"><h2>Piloti disponibili</h2><input id="driverSearch" placeholder="Cerca pilota o PSN ID" style="max-width:260px"></div><div class="table-wrap"><table><thead><tr><th>Nome</th><th>PSN ID</th><th></th></tr></thead><tbody id="driverRows"></tbody></table></div></div>
 </section>
 <section id="rules" class="tabview hidden">
+<div class="card">
+<h2>1 · Crea un campionato importando il regolamento PDF</h2>
+<p class="tiny">Carica il PDF ufficiale: estraiamo il testo e proponiamo nome, calendario e punteggi. Verifica i campi prima di creare la pagina dedicata.</p>
+<div class="upload"><div style="font-size:27px">📄</div><b>Importa regolamento / istruzioni PDF</b><input id="rulesPdf" type="file" accept="application/pdf,.pdf"><div id="pdfStatus" class="tiny">Nessun PDF selezionato</div></div>
+<div class="fields" style="margin-top:12px">
+<div><label>Nome campionato</label><input id="pdfChampName" placeholder="Nome del campionato"></div>
+<div><label>Stagione / anno</label><input id="pdfSeason" placeholder="Es. 2026"></div>
+<div><label>Numero gare individuato</label><input id="pdfRounds" placeholder="Es. 8 gare"></div>
+<div><label>Punti per posizione</label><input id="pdfPoints" placeholder="25,18,15,12,10,8,6,4,2,1"></div>
+</div>
+<label style="margin-top:12px">Testo estratto dal PDF</label><textarea id="pdfText" placeholder="Il contenuto del PDF comparirà qui..."></textarea>
+<div class="actions"><button id="readPdf">Leggi PDF</button><button class="secondary" id="createFromPdf">Crea pagina campionato</button></div><div id="pdfSummary" class="tiny"></div>
+</div>
 <div class="card"><div class="rowhead"><h2>Campionati</h2><button class="secondary small" id="addChamp">+ Nuovo campionato</button></div><div id="champCards"></div></div>
 <div class="card"><h2>Modifica regolamento punti</h2><div class="fields"><div><label>Campionato</label><select id="ruleChamp"></select></div><div><label>Punti per posizione (separati da virgola)</label><input id="pointsInput" placeholder="25,18,15,12,10,8,6,4,2,1"></div><div><label>Bonus pole position</label><input id="polePoints" type="number" value="1"></div><div><label>Bonus giro veloce</label><input id="fastPoints" type="number" value="1"></div></div><div class="actions"><button id="saveRules">Salva regolamento</button></div><p class="tiny">Imposta qui il regolamento ufficiale di ciascun campionato prima di usare i risultati reali. I bonus sono aggiunti ai punti della posizione.</p></div>
 </section>
 <footer>LION CREATOR DESK · Prototipo Content Creator · I dati di questa demo restano sul dispositivo utilizzato.</footer>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 const SEED_DRIVERS = [
 ["Mauro Di Bartolo","TLM_Sicily"],["Michael Mike91","Mikedb_91_"],["Liberato","mark126p"],["Mirco","Miciona75"],["Lorenzo","Parenji"],["Fabio","BOMBERDIMA75"],["Luigi","Patanel86"],["Alessandro","Talsigiano"],["Simone","isnotacrime"],["Riccardo","rikas78"],["Domenico","Thigo Durante"],["Ulisse","Ulix1990"],["Carlo","TLM_wid83"],["Nicolò","Nicopol46"],["Aldo","AldoBabyKiller"],["Valerio","Verce90"],["Steven","Spake_Mosconi"],["Federico","Febshy"],["Paolo","Asseemazz"],["Nino","TLM_SKIZ2034"],["Roberto","rupetheking"],["Matteo","mattebenny"],["Fabio","TLM_Fro51ni"],["Cristian","TLM_Kappa0973"],["Angelo","TLM_Buitre83GT"],["Donato","TLM_dimaa66"],["Angelo","CTR_jet-morello"],["Tony","Tonyroto74"],["Christian","Chry-77"],["Massimo","Liotru1979"],["Matteo","Silentium884"],["Michele","XRUA85x"],["Paolo","selpa974"],["Emanuele","Villab90"],["Antonio","TheGuarny"],["Fabio","Ctr_ocior-78"],["Roberto","BobGre93"]
@@ -93,7 +107,7 @@ function switchTab(id){document.querySelectorAll(".tabview").forEach(x=>x.classL
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 $("champ").onchange=()=>{renderRuleSummary();renderResultRows()};
 $("standChamp").onchange=renderStandings;
-function blankRow(){return {position:currentRows.length+1,driverId:"",name:"",psn:"",pole:false,fast:false,status:"Presente"}}
+function blankRow(){return {position:currentRows.length+1,driverId:"",name:"",psn:"",time:"",pole:false,fast:false,status:"Presente"}}
 function renderResultRows(){let tb=$("resultRows");if(!currentRows.length){tb.innerHTML='<tr><td colspan="7" class="empty">Carica una foto o aggiungi manualmente i piloti.</td></tr>';return}
 tb.innerHTML=currentRows.map((r,i)=>'<tr><td><input type="number" min="1" value="'+esc(r.position)+'" data-i="'+i+'" data-k="position" style="width:58px"></td><td><select data-i="'+i+'" data-k="driverId"><option value="">Seleziona pilota…</option>'+state.drivers.map(d=>'<option value="'+d.id+'" '+(String(r.driverId)===String(d.id)?'selected':'')+'>'+esc(d.name)+' · '+esc(d.psn)+'</option>').join("")+'</select><input data-i="'+i+'" data-k="freeName" value="'+esc(r.psn||r.name||"")+'" placeholder="PSN / nome" style="margin-top:5px"></td><td class="pos" id="pts'+i+'">'+pointsFor(r)+'</td><td><input type="checkbox" data-i="'+i+'" data-k="pole" '+(r.pole?'checked':'')+'></td><td><input type="checkbox" data-i="'+i+'" data-k="fast" '+(r.fast?'checked':'')+'></td><td><select data-i="'+i+'" data-k="status"><option '+(r.status==="Presente"?"selected":"")+' >Presente</option><option '+(r.status==="Ritirato"?"selected":"")+'>Ritirato</option><option '+(r.status==="Assente"?"selected":"")+'>Assente</option><option '+(r.status==="Squalificato"?"selected":"")+'>Squalificato</option></select></td><td class="no-print"><button class="ghost small" data-remove="'+i+'">✕</button></td></tr>').join("");
 tb.querySelectorAll("[data-i]").forEach(el=>el.onchange=()=>{let r=currentRows[+el.dataset.i],k=el.dataset.k;if(k==="driverId"){r.driverId=el.value;let d=state.drivers.find(x=>String(x.id)===String(el.value));if(d){r.name=d.name;r.psn=d.psn}}else if(k==="freeName"){r.psn=el.value;let d=state.drivers.find(x=>x.psn.toLowerCase()===el.value.toLowerCase()||x.name.toLowerCase()===el.value.toLowerCase());if(d){r.driverId=d.id;r.name=d.name;r.psn=d.psn}}else if(el.type==="checkbox")r[k]=el.checked;else r[k]=el.value;renderResultRows()});
